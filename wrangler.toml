@@ -1,5 +1,0 @@
-name = "chill-hub-v1"
-compatibility_date = "2025-11-21"
-[assets]
-globs = ["public/**/*"]
-exclude = ["public/storage/ag/g2/tanuki-sunset/unity/tanuki.data.unityweb"]
