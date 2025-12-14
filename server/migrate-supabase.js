@@ -11,7 +11,7 @@ async function migrateUser(userData, settingsData) {
     if (userData.encrypted_password) {
       passwordHash = userData.encrypted_password;
     } else {
-      passwordHash = await bcrypt.hash('temp_password_' + randomUUID(), 10);
+      passwordHash = null;
     }
 
     db.prepare(
