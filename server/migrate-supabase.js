@@ -42,7 +42,7 @@ async function migrateUser(userData, settingsData) {
     console.log(`Migrated user: ${userData.email} -> ${userId}`);
     return userId;
   } catch (error) {
-    console.error(`Error migrating user ${userData.email}:`, error);
+    console.error(`Error migrating user ${userId}:`, error);
     return null;
   }
 }
