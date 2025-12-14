@@ -26,7 +26,10 @@ async function migrateUser(userData, settingsData) {
       userData.user_metadata?.name || null,
       userData.user_metadata?.bio || null,
       userData.user_metadata?.avatar_url || null,
-      new Date(userData.created_at).getTime() || now,
+      (() => {
+        const createdAtTime = new Date(userData.created_at).getTime();
+        return Number.isNaN(createdAtTime) ? now : createdAtTime;
+      })(),
       now
     );
 
