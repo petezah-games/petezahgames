@@ -6,13 +6,39 @@ interface TabItemProps {
   tab: Tab;
   isActive: boolean;
   isPinned?: boolean;
+  collapsed?: boolean;
   onClick: () => void;
   onClose: () => void;
   onTogglePin: () => void;
   onToggleSplit: () => void;
 }
 
-export default function TabItem({ tab, isActive, isPinned, onClick, onClose, onTogglePin, onToggleSplit }: TabItemProps) {
+export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, onClose, onTogglePin, onToggleSplit }: TabItemProps) {
+  if (collapsed) {
+    return (
+      <motion.button
+        layout
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        onClick={onClick}
+        className={`relative w-8 h-8 rounded-xl flex items-center justify-center text-xs font-medium transition-all duration-150 ${
+          isActive ? "glass text-primary" : "hover:bg-accent/50 text-muted-foreground"
+        }`}
+        title={tab.title}
+      >
+        {isActive && (
+          <motion.div
+            layoutId="tab-collapsed-glow"
+            className="absolute inset-0 rounded-xl border border-primary/20"
+            style={{ background: "hsl(217 90% 61% / 0.08)" }}
+          />
+        )}
+        <span className="relative z-10 text-[11px]">{tab.icon || tab.title[0]}</span>
+      </motion.button>
+    );
+  }
+
   return (
     <motion.div
       layout
@@ -21,42 +47,44 @@ export default function TabItem({ tab, isActive, isPinned, onClick, onClose, onT
       exit={{ opacity: 0, x: -8, height: 0 }}
       transition={{ duration: 0.15 }}
       onClick={onClick}
-      className={`group relative flex items-center gap-2 rounded-lg cursor-pointer transition-all duration-150 ${
-        isPinned ? "px-2 py-1.5" : "px-3 py-2"
+      className={`group relative flex items-center gap-2.5 rounded-xl cursor-pointer transition-all duration-150 ${
+        isPinned ? "px-2 py-1.5" : "px-3 py-2.5"
       } ${isActive ? "glass" : "hover:bg-accent/50"}`}
     >
       {isActive && (
         <motion.div
-          layoutId="tab-active-glow"
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-primary"
+          layoutId="tab-active-bar"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-primary"
         />
       )}
-      <div className="w-4 h-4 rounded-md bg-accent flex items-center justify-center flex-shrink-0">
-        <span className="text-[8px] font-mono-dot text-muted-foreground uppercase">
-          {tab.url.slice(0, 2)}
-        </span>
+      <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${
+        isActive ? "bg-primary/15 text-primary" : "bg-accent text-muted-foreground"
+      }`}>
+        <span className="text-[10px] font-medium">{tab.icon || tab.title[0]}</span>
       </div>
-      <span className={`flex-1 truncate text-sm ${isActive ? "text-foreground" : "text-secondary-foreground"}`}>
-        {isPinned ? "" : tab.title}
-      </span>
+      {!isPinned && (
+        <span className={`flex-1 truncate text-[13px] ${isActive ? "text-foreground font-medium" : "text-secondary-foreground"}`}>
+          {tab.title}
+        </span>
+      )}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={(e) => { e.stopPropagation(); onToggleSplit(); }}
-          className="p-0.5 rounded hover:bg-accent transition-colors"
+          className="p-1 rounded-lg hover:bg-accent transition-colors"
         >
-          <SplitSquareHorizontal size={10} className="text-muted-foreground" />
+          <SplitSquareHorizontal size={11} className="text-muted-foreground" />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
-          className="p-0.5 rounded hover:bg-accent transition-colors"
+          className="p-1 rounded-lg hover:bg-accent transition-colors"
         >
-          <Pin size={10} className={tab.pinned ? "text-primary" : "text-muted-foreground"} />
+          <Pin size={11} className={tab.pinned ? "text-primary" : "text-muted-foreground"} />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onClose(); }}
-          className="p-0.5 rounded hover:bg-destructive/20 transition-colors"
+          className="p-1 rounded-lg hover:bg-destructive/20 transition-colors"
         >
-          <X size={10} className="text-muted-foreground" />
+          <X size={11} className="text-muted-foreground" />
         </button>
       </div>
     </motion.div>
@@ -68,18 +96,42 @@ interface TabListProps {
   tabs: Tab[];
   activeTabId: string;
   pinned?: boolean;
+  collapsed?: boolean;
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
   onTogglePin: (id: string) => void;
   onToggleSplit: (id: string) => void;
 }
 
-export function TabList({ label, tabs, activeTabId, pinned, onSelect, onClose, onTogglePin, onToggleSplit }: TabListProps) {
+export function TabList({ label, tabs, activeTabId, pinned, collapsed, onSelect, onClose, onTogglePin, onToggleSplit }: TabListProps) {
   if (tabs.length === 0) return null;
+
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <AnimatePresence mode="popLayout">
+          {tabs.map((tab) => (
+            <TabItem
+              key={tab.id}
+              tab={tab}
+              isActive={tab.id === activeTabId}
+              isPinned={pinned}
+              collapsed
+              onClick={() => onSelect(tab.id)}
+              onClose={() => onClose(tab.id)}
+              onTogglePin={() => onTogglePin(tab.id)}
+              onToggleSplit={() => onToggleSplit(tab.id)}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
   return (
     <div className="px-2">
       <div className="px-2 py-1.5">
-        <span className="text-[10px] font-mono-dot uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
           {label}
         </span>
       </div>

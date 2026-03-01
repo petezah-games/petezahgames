@@ -38,14 +38,14 @@ export default function ArcBrowser() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex items-center justify-between px-4 py-1.5 border-t border-border"
+          className="flex items-center justify-between px-4 py-1.5 border-t border-border/50"
         >
-          <span className="text-[9px] font-mono-dot uppercase tracking-[0.3em] text-muted-foreground">
+          <span className="text-[9px] font-mono tracking-wider text-muted-foreground">
             {state.tabs.length} tabs · {state.spaces.length} spaces
           </span>
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-space-green" />
-            <span className="text-[9px] font-mono-dot uppercase tracking-[0.3em] text-muted-foreground">
+            <span className="text-[9px] font-mono tracking-wider text-muted-foreground">
               Secure
             </span>
           </div>

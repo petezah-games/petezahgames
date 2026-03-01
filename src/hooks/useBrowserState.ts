@@ -7,6 +7,7 @@ export interface Tab {
   favicon?: string;
   pinned?: boolean;
   spaceId: string;
+  icon?: string;
 }
 
 export interface Space {
@@ -22,14 +23,14 @@ const DEFAULT_SPACES: Space[] = [
 ];
 
 const DEFAULT_TABS: Tab[] = [
-  { id: "1", title: "Nothing OS — Design Language", url: "nothing.tech/os", pinned: true, spaceId: "personal" },
-  { id: "2", title: "Apple Vision Pro — Spatial Computing", url: "apple.com/vision", pinned: true, spaceId: "personal" },
-  { id: "3", title: "Arc Browser — Internet Computer", url: "arc.net", pinned: false, spaceId: "personal" },
-  { id: "4", title: "Figma — Design Workspace", url: "figma.com", pinned: true, spaceId: "work" },
-  { id: "5", title: "GitHub — Code Repository", url: "github.com", pinned: false, spaceId: "work" },
-  { id: "6", title: "Linear — Project Tracker", url: "linear.app", pinned: false, spaceId: "work" },
-  { id: "7", title: "Dribbble — Design Inspiration", url: "dribbble.com", pinned: true, spaceId: "creative" },
-  { id: "8", title: "Behance — Creative Portfolio", url: "behance.net", pinned: false, spaceId: "creative" },
+  { id: "1", title: "Nothing OS", url: "nothing.tech/os", pinned: true, spaceId: "personal", icon: "N" },
+  { id: "2", title: "Apple Vision Pro", url: "apple.com/vision", pinned: true, spaceId: "personal", icon: "A" },
+  { id: "3", title: "Arc Browser", url: "arc.net", pinned: false, spaceId: "personal", icon: "◉" },
+  { id: "4", title: "Figma", url: "figma.com", pinned: true, spaceId: "work", icon: "F" },
+  { id: "5", title: "GitHub", url: "github.com", pinned: false, spaceId: "work", icon: "G" },
+  { id: "6", title: "Linear", url: "linear.app", pinned: false, spaceId: "work", icon: "L" },
+  { id: "7", title: "Dribbble", url: "dribbble.com", pinned: true, spaceId: "creative", icon: "D" },
+  { id: "8", title: "Behance", url: "behance.net", pinned: false, spaceId: "creative", icon: "B" },
 ];
 
 let tabCounter = 9;
@@ -39,7 +40,7 @@ export function useBrowserState() {
   const [tabs, setTabs] = useState<Tab[]>(DEFAULT_TABS);
   const [activeTabId, setActiveTabId] = useState("1");
   const [activeSpaceId, setActiveSpaceId] = useState("personal");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [splitTabId, setSplitTabId] = useState<string | null>(null);
   const [urlInput, setUrlInput] = useState("");
   const [isUrlFocused, setIsUrlFocused] = useState(false);
@@ -55,6 +56,7 @@ export function useBrowserState() {
       title: "New Tab",
       url: "about:blank",
       spaceId: activeSpaceId,
+      icon: "✦",
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(newTab.id);
@@ -81,7 +83,7 @@ export function useBrowserState() {
 
   const navigateToUrl = useCallback((url: string) => {
     if (!url.trim()) return;
-    const formatted = url.includes(".") ? url : `search.nothing.tech?q=${encodeURIComponent(url)}`;
+    const formatted = url.includes(".") ? url : `search.arc.net?q=${encodeURIComponent(url)}`;
     setTabs((prev) =>
       prev.map((t) =>
         t.id === activeTabId ? { ...t, url: formatted, title: formatted.split("/")[0] || formatted } : t
@@ -92,26 +94,9 @@ export function useBrowserState() {
   }, [activeTabId]);
 
   return {
-    spaces,
-    tabs,
-    activeTabId,
-    activeSpaceId,
-    activeTab,
-    pinnedTabs,
-    unpinnedTabs,
-    sidebarCollapsed,
-    splitTabId,
-    urlInput,
-    isUrlFocused,
-    setActiveTabId,
-    setActiveSpaceId,
-    setSidebarCollapsed,
-    setUrlInput,
-    setIsUrlFocused,
-    addTab,
-    closeTab,
-    togglePin,
-    toggleSplit,
-    navigateToUrl,
+    spaces, tabs, activeTabId, activeSpaceId, activeTab, pinnedTabs, unpinnedTabs,
+    sidebarCollapsed, splitTabId, urlInput, isUrlFocused,
+    setActiveTabId, setActiveSpaceId, setSidebarCollapsed, setUrlInput, setIsUrlFocused,
+    addTab, closeTab, togglePin, toggleSplit, navigateToUrl,
   };
 }
