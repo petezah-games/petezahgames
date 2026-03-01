@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Shield, ArrowLeft, ArrowRight, RotateCw, Share, Bookmark } from "lucide-react";
 import { Tab } from "@/hooks/useBrowserState";
@@ -14,8 +14,6 @@ interface ToolbarProps {
 
 export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange, onUrlFocus, onNavigate }: ToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [canGoBack, setCanGoBack] = useState(true);
-  const [canGoForward, setCanGoForward] = useState(false);
 
   useEffect(() => {
     if (isUrlFocused && inputRef.current) {
@@ -27,22 +25,22 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
   const displayUrl = isUrlFocused ? urlInput : (activeTab?.url || "");
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2">
+    <div className="flex items-center gap-3 px-4 py-2.5">
       <div className="flex items-center gap-0.5">
-        <button className={`p-1.5 rounded-lg transition-colors ${canGoBack ? "hover:bg-accent text-muted-foreground" : "text-muted/40 cursor-not-allowed"}`}>
+        <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
           <ArrowLeft size={14} />
         </button>
-        <button className={`p-1.5 rounded-lg transition-colors ${canGoForward ? "hover:bg-accent text-muted-foreground" : "text-muted/40 cursor-not-allowed"}`}>
+        <button className="p-1.5 rounded-xl text-muted/30 cursor-not-allowed transition-colors">
           <ArrowRight size={14} />
         </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground transition-colors">
+        <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
           <RotateCw size={13} />
         </button>
       </div>
 
       <div
-        className={`flex-1 flex items-center gap-2 rounded-xl px-3 py-1.5 transition-all duration-200 ${
-          isUrlFocused ? "glass-heavy ring-1 ring-primary/30" : "glass hover:bg-accent/40"
+        className={`flex-1 flex items-center gap-2.5 rounded-2xl px-4 py-2 transition-all duration-200 cursor-text ${
+          isUrlFocused ? "glass-heavy ring-1 ring-primary/20" : "glass hover:bg-accent/30"
         }`}
         onClick={() => {
           onUrlChange(activeTab?.url || "");
@@ -51,11 +49,11 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
       >
         <AnimatePresence mode="wait">
           {isUrlFocused ? (
-            <motion.div key="search" initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
+            <motion.div key="search" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
               <Search size={13} className="text-primary" />
             </motion.div>
           ) : (
-            <motion.div key="shield" initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
+            <motion.div key="shield" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
               <Shield size={13} className="text-muted-foreground" />
             </motion.div>
           )}
@@ -74,21 +72,21 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
             if (e.key === "Escape") onUrlFocus(false);
           }}
           placeholder="Search or enter URL"
-          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none font-mono-dot"
+          className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground outline-none"
           spellCheck={false}
         />
         {!isUrlFocused && activeTab && (
-          <span className="text-[10px] font-mono-dot text-muted-foreground uppercase tracking-wider">
+          <span className="text-[10px] font-mono text-muted-foreground tracking-wider">
             {activeTab.url.split(".").pop()?.split("/")[0]}
           </span>
         )}
       </div>
 
       <div className="flex items-center gap-0.5">
-        <button className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground transition-colors">
+        <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
           <Bookmark size={14} />
         </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground transition-colors">
+        <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
           <Share size={14} />
         </button>
       </div>
