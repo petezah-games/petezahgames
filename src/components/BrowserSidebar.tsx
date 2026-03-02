@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Plus, PanelLeftClose, PanelLeft, User, History, Bookmark, Download, Command } from "lucide-react";
+import { Plus, PanelLeftClose, PanelLeft, User, History, Bookmark, Download, Command, Bot, Music, Film, Gamepad2, AppWindow, ShieldCheck } from "lucide-react";
 import SpaceSwitcher from "@/components/SpaceSwitcher";
 import { TabList } from "@/components/TabItem";
 import { Tab, Space } from "@/hooks/useBrowserState";
@@ -21,6 +21,15 @@ interface SidebarProps {
   onAccountClick: () => void;
 }
 
+const SIDEBAR_FEATURES = [
+  { icon: Bot, label: "AI" },
+  { icon: Music, label: "Music" },
+  { icon: Film, label: "Movies" },
+  { icon: Gamepad2, label: "Games" },
+  { icon: AppWindow, label: "Apps" },
+  { icon: ShieldCheck, label: "VPN" },
+];
+
 export default function Sidebar({
   spaces, activeSpaceId, pinnedTabs, unpinnedTabs, activeTabId, collapsed,
   onSpaceSwitch, onTabSelect, onTabClose, onTabPin, onTabSplit, onAddTab, onToggleCollapse, onAccountClick,
@@ -38,17 +47,17 @@ export default function Sidebar({
             animate={{ opacity: 1 }}
             className="flex items-center gap-2"
           >
-            <div className="w-2 h-2 rounded-full bg-primary/60 animate-glow-pulse" />
+            <div className="w-2 h-2 rounded-full bg-foreground/50 animate-glow-pulse" />
             <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
-              Arc
+              Orbit
             </span>
           </motion.div>
         )}
         <button
           onClick={onToggleCollapse}
-          className="p-1.5 rounded-xl hover:bg-accent transition-colors"
+          className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
         >
-          {collapsed ? <PanelLeft size={14} className="text-muted-foreground" /> : <PanelLeftClose size={14} className="text-muted-foreground" />}
+          {collapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
         </button>
       </div>
 
@@ -57,105 +66,71 @@ export default function Sidebar({
           <SpaceSwitcher spaces={spaces} activeSpaceId={activeSpaceId} onSwitch={onSpaceSwitch} collapsed />
           <div className="w-5 h-px bg-border my-1" />
           <div className="flex-1 overflow-y-auto scrollbar-none py-1 space-y-1">
-            <TabList
-              label="Pinned"
-              tabs={pinnedTabs}
-              activeTabId={activeTabId}
-              pinned
-              collapsed
-              onSelect={onTabSelect}
-              onClose={onTabClose}
-              onTogglePin={onTabPin}
-              onToggleSplit={onTabSplit}
-            />
-            <div className="flex justify-center py-1">
-              <div className="w-3 h-px bg-border" />
-            </div>
-            <TabList
-              label="Tabs"
-              tabs={unpinnedTabs}
-              activeTabId={activeTabId}
-              collapsed
-              onSelect={onTabSelect}
-              onClose={onTabClose}
-              onTogglePin={onTabPin}
-              onToggleSplit={onTabSplit}
-            />
+            <TabList label="Pinned" tabs={pinnedTabs} activeTabId={activeTabId} pinned collapsed onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
+            <div className="flex justify-center py-1"><div className="w-3 h-px bg-border" /></div>
+            <TabList label="Tabs" tabs={unpinnedTabs} activeTabId={activeTabId} collapsed onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
           </div>
-          <div className="flex flex-col items-center gap-1 py-2 border-t border-border">
-            <button onClick={onAddTab} className="w-8 h-8 flex items-center justify-center rounded-xl glass hover:bg-accent/60 transition-all text-muted-foreground">
+          <div className="flex flex-col items-center gap-0.5 py-2 border-t border-border">
+            {SIDEBAR_FEATURES.map(({ icon: Icon, label }) => (
+              <button key={label} className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground" title={label}>
+                <Icon size={12} />
+              </button>
+            ))}
+            <div className="w-4 h-px bg-border my-0.5" />
+            <button onClick={onAddTab} className="w-8 h-8 flex items-center justify-center rounded-xl glass hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground">
               <Plus size={13} />
             </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
-              <Command size={12} />
-            </button>
-            <button onClick={onAccountClick} className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+            <button onClick={onAccountClick} className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground">
               <User size={13} />
             </button>
           </div>
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex-1 flex flex-col overflow-hidden"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col overflow-hidden">
           <SpaceSwitcher spaces={spaces} activeSpaceId={activeSpaceId} onSwitch={onSpaceSwitch} />
           <div className="flex-1 overflow-y-auto scrollbar-none space-y-2 pb-2">
-            <TabList
-              label="Pinned"
-              tabs={pinnedTabs}
-              activeTabId={activeTabId}
-              pinned
-              onSelect={onTabSelect}
-              onClose={onTabClose}
-              onTogglePin={onTabPin}
-              onToggleSplit={onTabSplit}
-            />
+            <TabList label="Pinned" tabs={pinnedTabs} activeTabId={activeTabId} pinned onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
             <div className="mx-4 h-px bg-border" />
-            <TabList
-              label="Tabs"
-              tabs={unpinnedTabs}
-              activeTabId={activeTabId}
-              onSelect={onTabSelect}
-              onClose={onTabClose}
-              onTogglePin={onTabPin}
-              onToggleSplit={onTabSplit}
-            />
+            <TabList label="Tabs" tabs={unpinnedTabs} activeTabId={activeTabId} onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
           </div>
-          <div className="p-2 space-y-1 border-t border-border">
-            <div className="flex items-center gap-1">
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+          <div className="px-2 py-1.5 border-t border-border">
+            <div className="grid grid-cols-3 gap-1 mb-2">
+              {SIDEBAR_FEATURES.map(({ icon: Icon, label }) => (
+                <button key={label} className="flex flex-col items-center gap-1 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground">
+                  <Icon size={12} />
+                  <span className="text-[9px]">{label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 mb-1.5">
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground">
                 <Bookmark size={11} />
                 <span className="text-[10px]">Saved</span>
               </button>
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground">
                 <History size={11} />
                 <span className="text-[10px]">History</span>
               </button>
-              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground">
                 <Download size={11} />
                 <span className="text-[10px]">Downloads</span>
               </button>
             </div>
-            <button
-              onClick={onAddTab}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass hover:bg-accent/60 transition-all text-xs text-muted-foreground"
-            >
+            <button onClick={onAddTab} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass hover:bg-accent/60 transition-all text-xs text-muted-foreground hover:text-foreground">
               <Plus size={12} />
               <span className="tracking-wide">New Tab</span>
             </button>
-            <div className="flex items-center gap-2 px-2 pt-1">
+            <div className="flex items-center gap-2 px-2 pt-1.5">
               <button onClick={onAccountClick} className="flex items-center gap-2 flex-1 py-2 rounded-xl hover:bg-accent/60 transition-all group">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-border">
-                  <User size={10} className="text-primary/70" />
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-foreground/15 to-foreground/5 flex items-center justify-center border border-border">
+                  <User size={10} className="text-foreground/60" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[11px] text-foreground/80">Guest</span>
                   <span className="text-[9px] text-muted-foreground">Sign in</span>
                 </div>
               </button>
-              <button className="p-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+              <button className="p-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground hover:text-foreground">
                 <Command size={13} />
               </button>
             </div>
