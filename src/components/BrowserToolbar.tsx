@@ -1,6 +1,6 @@
 import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Shield, ArrowLeft, ArrowRight, RotateCw, Share, Bookmark } from "lucide-react";
+import { Search, Shield, ArrowLeft, ArrowRight, RotateCw, Share, Bookmark, Bell, Download, Settings, Grid3X3 } from "lucide-react";
 import { Tab } from "@/hooks/useBrowserState";
 
 interface ToolbarProps {
@@ -10,9 +10,10 @@ interface ToolbarProps {
   onUrlChange: (val: string) => void;
   onUrlFocus: (focused: boolean) => void;
   onNavigate: (url: string) => void;
+  onNotificationClick: () => void;
 }
 
-export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange, onUrlFocus, onNavigate }: ToolbarProps) {
+export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange, onUrlFocus, onNavigate, onNotificationClick }: ToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
 
       <div
         className={`flex-1 flex items-center gap-2.5 rounded-2xl px-4 py-2 transition-all duration-200 cursor-text ${
-          isUrlFocused ? "glass-heavy ring-1 ring-primary/20" : "glass hover:bg-accent/30"
+          isUrlFocused ? "liquid-glass ring-1 ring-primary/10" : "glass hover:bg-accent/30"
         }`}
         onClick={() => {
           onUrlChange(activeTab?.url || "");
@@ -50,7 +51,7 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
         <AnimatePresence mode="wait">
           {isUrlFocused ? (
             <motion.div key="search" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
-              <Search size={13} className="text-primary" />
+              <Search size={13} className="text-foreground/60" />
             </motion.div>
           ) : (
             <motion.div key="shield" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
@@ -84,7 +85,17 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
 
       <div className="flex items-center gap-0.5">
         <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
+          <Download size={14} />
+        </button>
+        <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
           <Bookmark size={14} />
+        </button>
+        <button onClick={onNotificationClick} className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors relative">
+          <Bell size={14} />
+          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary/60" />
+        </button>
+        <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
+          <Grid3X3 size={14} />
         </button>
         <button className="p-1.5 rounded-xl hover:bg-accent text-muted-foreground transition-colors">
           <Share size={14} />

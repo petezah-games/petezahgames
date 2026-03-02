@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Plus, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Plus, PanelLeftClose, PanelLeft, User, History, Bookmark, Download, Command } from "lucide-react";
 import SpaceSwitcher from "@/components/SpaceSwitcher";
 import { TabList } from "@/components/TabItem";
 import { Tab, Space } from "@/hooks/useBrowserState";
@@ -18,15 +18,16 @@ interface SidebarProps {
   onTabSplit: (id: string) => void;
   onAddTab: () => void;
   onToggleCollapse: () => void;
+  onAccountClick: () => void;
 }
 
 export default function Sidebar({
   spaces, activeSpaceId, pinnedTabs, unpinnedTabs, activeTabId, collapsed,
-  onSpaceSwitch, onTabSelect, onTabClose, onTabPin, onTabSplit, onAddTab, onToggleCollapse,
+  onSpaceSwitch, onTabSelect, onTabClose, onTabPin, onTabSplit, onAddTab, onToggleCollapse, onAccountClick,
 }: SidebarProps) {
   return (
     <motion.aside
-      animate={{ width: collapsed ? 52 : 260 }}
+      animate={{ width: collapsed ? 56 : 260 }}
       transition={{ type: "spring", duration: 0.4, bounce: 0.1 }}
       className="h-full flex flex-col sidebar-gradient border-r border-border overflow-hidden flex-shrink-0"
     >
@@ -37,7 +38,7 @@ export default function Sidebar({
             animate={{ opacity: 1 }}
             className="flex items-center gap-2"
           >
-            <div className="w-2 h-2 rounded-full bg-primary animate-glow-pulse" />
+            <div className="w-2 h-2 rounded-full bg-primary/60 animate-glow-pulse" />
             <span className="text-[11px] font-medium tracking-wide text-muted-foreground">
               Arc
             </span>
@@ -81,12 +82,15 @@ export default function Sidebar({
               onToggleSplit={onTabSplit}
             />
           </div>
-          <div className="py-2">
-            <button
-              onClick={onAddTab}
-              className="w-8 h-8 flex items-center justify-center rounded-xl glass hover:bg-accent/60 transition-all text-muted-foreground"
-            >
+          <div className="flex flex-col items-center gap-1 py-2 border-t border-border">
+            <button onClick={onAddTab} className="w-8 h-8 flex items-center justify-center rounded-xl glass hover:bg-accent/60 transition-all text-muted-foreground">
               <Plus size={13} />
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+              <Command size={12} />
+            </button>
+            <button onClick={onAccountClick} className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+              <User size={13} />
             </button>
           </div>
         </div>
@@ -119,7 +123,21 @@ export default function Sidebar({
               onToggleSplit={onTabSplit}
             />
           </div>
-          <div className="p-2">
+          <div className="p-2 space-y-1 border-t border-border">
+            <div className="flex items-center gap-1">
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+                <Bookmark size={11} />
+                <span className="text-[10px]">Saved</span>
+              </button>
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+                <History size={11} />
+                <span className="text-[10px]">History</span>
+              </button>
+              <button className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+                <Download size={11} />
+                <span className="text-[10px]">Downloads</span>
+              </button>
+            </div>
             <button
               onClick={onAddTab}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass hover:bg-accent/60 transition-all text-xs text-muted-foreground"
@@ -127,6 +145,20 @@ export default function Sidebar({
               <Plus size={12} />
               <span className="tracking-wide">New Tab</span>
             </button>
+            <div className="flex items-center gap-2 px-2 pt-1">
+              <button onClick={onAccountClick} className="flex items-center gap-2 flex-1 py-2 rounded-xl hover:bg-accent/60 transition-all group">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-border">
+                  <User size={10} className="text-primary/70" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[11px] text-foreground/80">Guest</span>
+                  <span className="text-[9px] text-muted-foreground">Sign in</span>
+                </div>
+              </button>
+              <button className="p-2 rounded-xl hover:bg-accent/60 transition-all text-muted-foreground">
+                <Command size={13} />
+              </button>
+            </div>
           </div>
         </motion.div>
       )}
