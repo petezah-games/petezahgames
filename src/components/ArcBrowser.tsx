@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useBrowserState } from "@/hooks/useBrowserState";
 import Sidebar from "@/components/BrowserSidebar";
 import Toolbar from "@/components/BrowserToolbar";
 import ContentArea from "@/components/ContentArea";
 import StatusBar from "@/components/StatusBar";
 import AccountPanel from "@/components/AccountPanel";
-import { User, Settings, Bell, Download, History, Bookmark, Command } from "lucide-react";
 
 export default function ArcBrowser() {
   const state = useBrowserState();
@@ -15,7 +14,7 @@ export default function ArcBrowser() {
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (
-    <div className="h-screen w-screen flex overflow-hidden bg-background space-bg">
+    <div className="h-screen w-screen flex overflow-hidden bg-background nebula-bg">
       <Sidebar
         spaces={state.spaces}
         activeSpaceId={state.activeSpaceId}

@@ -23,15 +23,15 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
         exit={{ opacity: 0, scale: 0.8 }}
         onClick={onClick}
         className={`relative w-8 h-8 rounded-xl flex items-center justify-center text-xs font-medium transition-all duration-150 ${
-          isActive ? "glass text-foreground" : "hover:bg-accent/50 text-muted-foreground"
+          isActive ? "glass-heavy text-foreground" : "hover:bg-accent/50 text-muted-foreground"
         }`}
         title={tab.title}
       >
         {isActive && (
           <motion.div
             layoutId="tab-collapsed-glow"
-            className="absolute inset-0 rounded-xl border border-primary/15"
-            style={{ background: "hsl(0 0% 100% / 0.05)" }}
+            className="absolute inset-0 rounded-xl border border-foreground/20"
+            style={{ background: "hsl(0 0% 100% / 0.06)" }}
           />
         )}
         <span className="relative z-10 text-[11px]">{tab.icon || tab.title[0]}</span>
@@ -54,11 +54,11 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
       {isActive && (
         <motion.div
           layoutId="tab-active-bar"
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-primary/50"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-foreground/40"
         />
       )}
       <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        isActive ? "bg-primary/10 text-foreground" : "bg-accent text-muted-foreground"
+        isActive ? "bg-foreground/10 text-foreground" : "bg-accent text-muted-foreground"
       }`}>
         <span className="text-[10px] font-medium">{tab.icon || tab.title[0]}</span>
       </div>
@@ -68,22 +68,13 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
         </span>
       )}
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleSplit(); }}
-          className="p-1 rounded-lg hover:bg-accent transition-colors"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onToggleSplit(); }} className="p-1 rounded-lg hover:bg-accent transition-colors">
           <SplitSquareHorizontal size={11} className="text-muted-foreground" />
         </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
-          className="p-1 rounded-lg hover:bg-accent transition-colors"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onTogglePin(); }} className="p-1 rounded-lg hover:bg-accent transition-colors">
           <Pin size={11} className={tab.pinned ? "text-foreground" : "text-muted-foreground"} />
         </button>
-        <button
-          onClick={(e) => { e.stopPropagation(); onClose(); }}
-          className="p-1 rounded-lg hover:bg-destructive/20 transition-colors"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="p-1 rounded-lg hover:bg-destructive/20 transition-colors">
           <X size={11} className="text-muted-foreground" />
         </button>
       </div>
@@ -111,17 +102,7 @@ export function TabList({ label, tabs, activeTabId, pinned, collapsed, onSelect,
       <div className="flex flex-col items-center gap-1">
         <AnimatePresence mode="popLayout">
           {tabs.map((tab) => (
-            <TabItem
-              key={tab.id}
-              tab={tab}
-              isActive={tab.id === activeTabId}
-              isPinned={pinned}
-              collapsed
-              onClick={() => onSelect(tab.id)}
-              onClose={() => onClose(tab.id)}
-              onTogglePin={() => onTogglePin(tab.id)}
-              onToggleSplit={() => onToggleSplit(tab.id)}
-            />
+            <TabItem key={tab.id} tab={tab} isActive={tab.id === activeTabId} isPinned={pinned} collapsed onClick={() => onSelect(tab.id)} onClose={() => onClose(tab.id)} onTogglePin={() => onTogglePin(tab.id)} onToggleSplit={() => onToggleSplit(tab.id)} />
           ))}
         </AnimatePresence>
       </div>
@@ -131,23 +112,12 @@ export function TabList({ label, tabs, activeTabId, pinned, collapsed, onSelect,
   return (
     <div className="px-2">
       <div className="px-2 py-1.5">
-        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
-          {label}
-        </span>
+        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">{label}</span>
       </div>
       <div className={pinned ? "flex flex-wrap gap-1" : "flex flex-col gap-0.5"}>
         <AnimatePresence mode="popLayout">
           {tabs.map((tab) => (
-            <TabItem
-              key={tab.id}
-              tab={tab}
-              isActive={tab.id === activeTabId}
-              isPinned={pinned}
-              onClick={() => onSelect(tab.id)}
-              onClose={() => onClose(tab.id)}
-              onTogglePin={() => onTogglePin(tab.id)}
-              onToggleSplit={() => onToggleSplit(tab.id)}
-            />
+            <TabItem key={tab.id} tab={tab} isActive={tab.id === activeTabId} isPinned={pinned} onClick={() => onSelect(tab.id)} onClose={() => onClose(tab.id)} onTogglePin={() => onTogglePin(tab.id)} onToggleSplit={() => onToggleSplit(tab.id)} />
           ))}
         </AnimatePresence>
       </div>
