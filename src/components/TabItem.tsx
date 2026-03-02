@@ -23,15 +23,15 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
         exit={{ opacity: 0, scale: 0.8 }}
         onClick={onClick}
         className={`relative w-8 h-8 rounded-xl flex items-center justify-center text-xs font-medium transition-all duration-150 ${
-          isActive ? "glass text-primary" : "hover:bg-accent/50 text-muted-foreground"
+          isActive ? "glass text-foreground" : "hover:bg-accent/50 text-muted-foreground"
         }`}
         title={tab.title}
       >
         {isActive && (
           <motion.div
             layoutId="tab-collapsed-glow"
-            className="absolute inset-0 rounded-xl border border-primary/20"
-            style={{ background: "hsl(217 90% 61% / 0.08)" }}
+            className="absolute inset-0 rounded-xl border border-primary/15"
+            style={{ background: "hsl(0 0% 100% / 0.05)" }}
           />
         )}
         <span className="relative z-10 text-[11px]">{tab.icon || tab.title[0]}</span>
@@ -54,11 +54,11 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
       {isActive && (
         <motion.div
           layoutId="tab-active-bar"
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-primary"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-primary/50"
         />
       )}
       <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        isActive ? "bg-primary/15 text-primary" : "bg-accent text-muted-foreground"
+        isActive ? "bg-primary/10 text-foreground" : "bg-accent text-muted-foreground"
       }`}>
         <span className="text-[10px] font-medium">{tab.icon || tab.title[0]}</span>
       </div>
@@ -78,7 +78,7 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
           onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
           className="p-1 rounded-lg hover:bg-accent transition-colors"
         >
-          <Pin size={11} className={tab.pinned ? "text-primary" : "text-muted-foreground"} />
+          <Pin size={11} className={tab.pinned ? "text-foreground" : "text-muted-foreground"} />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onClose(); }}
