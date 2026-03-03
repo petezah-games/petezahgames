@@ -33,6 +33,8 @@ export default function Sidebar({
   spaces, activeSpaceId, pinnedTabs, unpinnedTabs, activeTabId, collapsed,
   onSpaceSwitch, onTabSelect, onTabClose, onTabPin, onTabSplit, onAddTab, onToggleCollapse, onAccountClick,
 }: SidebarProps) {
+  const allTabs = [...pinnedTabs, ...unpinnedTabs];
+
   return (
     <motion.aside
       animate={{ width: collapsed ? 56 : 260 }}
@@ -62,9 +64,7 @@ export default function Sidebar({
       {collapsed ? (
         <div className="flex-1 flex flex-col items-center overflow-hidden">
           <div className="flex-1 overflow-y-auto scrollbar-none py-1 space-y-1">
-            <TabList label="Pinned" tabs={pinnedTabs} activeTabId={activeTabId} pinned collapsed onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
-            <div className="flex justify-center py-1"><div className="w-3 h-px bg-border" /></div>
-            <TabList label="Tabs" tabs={unpinnedTabs} activeTabId={activeTabId} collapsed onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
+            <TabList label="Tabs" tabs={allTabs} activeTabId={activeTabId} collapsed onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
           </div>
           <div className="flex flex-col items-center gap-0.5 py-2 border-t border-border">
             {SIDEBAR_FEATURES.map(({ icon: Icon, label }) => (
@@ -83,10 +83,8 @@ export default function Sidebar({
         </div>
       ) : (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto scrollbar-none space-y-2 pb-2">
-            <TabList label="Pinned" tabs={pinnedTabs} activeTabId={activeTabId} pinned onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
-            <div className="mx-4 h-px bg-border" />
-            <TabList label="Tabs" tabs={unpinnedTabs} activeTabId={activeTabId} onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
+          <div className="flex-1 overflow-y-auto scrollbar-none space-y-0.5 pb-2">
+            <TabList label="Tabs" tabs={allTabs} activeTabId={activeTabId} onSelect={onTabSelect} onClose={onTabClose} onTogglePin={onTabPin} onToggleSplit={onTabSplit} />
           </div>
           <div className="px-2 py-1.5 border-t border-border">
             <div className="grid grid-cols-3 gap-1 mb-2">
@@ -117,7 +115,7 @@ export default function Sidebar({
             </button>
             <div className="flex items-center gap-2 px-2 pt-1.5">
               <button onClick={onAccountClick} className="flex items-center gap-2 flex-1 py-2 rounded-lg hover:bg-accent transition-all group">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
+                <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center border border-border">
                   <User size={10} className="text-foreground/70" />
                 </div>
                 <div className="flex flex-col">

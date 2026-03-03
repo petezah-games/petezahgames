@@ -22,8 +22,8 @@
     --accent-foreground: 210 15% 88%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --border: 210 40% 80% / 0.15;
-    --input: 210 40% 80% / 0.12;
+    --border: 210 40% 85% / 0.2;
+    --input: 210 40% 85% / 0.15;
     --ring: 210 100% 65%;
     --radius: 1rem;
     --glass: 210 40% 90% / 0.06;

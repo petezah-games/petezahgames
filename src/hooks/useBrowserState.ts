@@ -21,11 +21,11 @@ const DEFAULT_SPACES: Space[] = [
 ];
 
 const DEFAULT_TABS: Tab[] = [
-  { id: "1", title: "PeteZah Home", url: "petezah.app", pinned: true, spaceId: "main", icon: "🍕" },
-  { id: "2", title: "Games", url: "petezah.app/games", pinned: true, spaceId: "main", icon: "🎮" },
-  { id: "3", title: "AI Mode", url: "petezah.app/ai", pinned: false, spaceId: "main", icon: "🤖" },
-  { id: "4", title: "Music", url: "petezah.app/music", pinned: false, spaceId: "main", icon: "🎵" },
-  { id: "5", title: "Movies", url: "petezah.app/movies", pinned: false, spaceId: "main", icon: "🎬" },
+  { id: "1", title: "PeteZah Home", url: "petezah.app", pinned: false, spaceId: "main" },
+  { id: "2", title: "Games", url: "petezah.app/games", pinned: false, spaceId: "main" },
+  { id: "3", title: "AI Mode", url: "petezah.app/ai", pinned: false, spaceId: "main" },
+  { id: "4", title: "Music", url: "petezah.app/music", pinned: false, spaceId: "main" },
+  { id: "5", title: "Movies", url: "petezah.app/movies", pinned: false, spaceId: "main" },
 ];
 
 let tabCounter = 6;
@@ -51,7 +51,6 @@ export function useBrowserState() {
       title: "New Tab",
       url: "about:blank",
       spaceId: activeSpaceId,
-      icon: "✦",
     };
     setTabs((prev) => [...prev, newTab]);
     setActiveTabId(newTab.id);

@@ -34,7 +34,7 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
             style={{ background: "hsl(0 0% 100% / 0.06)" }}
           />
         )}
-        <span className="relative z-10 text-[11px]">{tab.icon || tab.title[0]}</span>
+        <span className="relative z-10 text-[11px]">{tab.title[0]}</span>
       </motion.button>
     );
   }
@@ -47,9 +47,9 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
       exit={{ opacity: 0, x: -8, height: 0 }}
       transition={{ duration: 0.15 }}
       onClick={onClick}
-      className={`group relative flex items-center gap-2.5 rounded-xl cursor-pointer transition-all duration-150 ${
-        isPinned ? "px-2 py-1.5" : "px-3 py-2.5"
-      } ${isActive ? "glass" : "hover:bg-accent/50"}`}
+      className={`group relative flex items-center gap-2.5 rounded-xl cursor-pointer transition-all duration-150 px-3 py-2.5 ${
+        isActive ? "glass" : "hover:bg-accent/50"
+      }`}
     >
       {isActive && (
         <motion.div
@@ -60,13 +60,11 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
       <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${
         isActive ? "bg-foreground/10 text-foreground" : "bg-accent text-muted-foreground"
       }`}>
-        <span className="text-[10px] font-medium">{tab.icon || tab.title[0]}</span>
+        <span className="text-[10px] font-medium">{tab.title[0]}</span>
       </div>
-      {!isPinned && (
-        <span className={`flex-1 truncate text-[13px] ${isActive ? "text-foreground font-medium" : "text-secondary-foreground"}`}>
-          {tab.title}
-        </span>
-      )}
+      <span className={`flex-1 truncate text-[13px] ${isActive ? "text-foreground font-medium" : "text-secondary-foreground"}`}>
+        {tab.title}
+      </span>
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button onClick={(e) => { e.stopPropagation(); onToggleSplit(); }} className="p-1 rounded-lg hover:bg-accent transition-colors">
           <SplitSquareHorizontal size={11} className="text-muted-foreground" />
@@ -114,7 +112,7 @@ export function TabList({ label, tabs, activeTabId, pinned, collapsed, onSelect,
       <div className="px-2 py-1.5">
         <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">{label}</span>
       </div>
-      <div className={pinned ? "flex flex-wrap gap-1" : "flex flex-col gap-0.5"}>
+      <div className="flex flex-col gap-0.5">
         <AnimatePresence mode="popLayout">
           {tabs.map((tab) => (
             <TabItem key={tab.id} tab={tab} isActive={tab.id === activeTabId} isPinned={pinned} onClick={() => onSelect(tab.id)} onClose={() => onClose(tab.id)} onTogglePin={() => onTogglePin(tab.id)} onToggleSplit={() => onToggleSplit(tab.id)} />
