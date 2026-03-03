@@ -18,12 +18,12 @@ export default function SpaceSwitcher({ spaces, activeSpaceId, onSwitch, collaps
             <button
               key={space.id}
               onClick={() => onSwitch(space.id)}
-              className="relative w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-200"
+              className="relative w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200"
             >
               {isActive && (
                 <motion.div
                   layoutId="space-dot-collapsed"
-                  className="absolute inset-0 rounded-xl glass"
+                  className="absolute inset-0 rounded-lg glass"
                   transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
                 />
               )}
@@ -50,13 +50,13 @@ export default function SpaceSwitcher({ spaces, activeSpaceId, onSwitch, collaps
           <button
             key={space.id}
             onClick={() => onSwitch(space.id)}
-            className="relative flex-1 py-2 rounded-xl text-xs font-medium transition-all duration-200"
+            className="relative flex-1 py-2 rounded-lg text-xs font-medium transition-all duration-200"
             style={{ color: isActive ? `hsl(${space.color})` : undefined }}
           >
             {isActive && (
               <motion.div
                 layoutId="space-indicator"
-                className="absolute inset-0 rounded-xl glass"
+                className="absolute inset-0 rounded-lg glass"
                 transition={{ type: "spring", duration: 0.35, bounce: 0.15 }}
               />
             )}
