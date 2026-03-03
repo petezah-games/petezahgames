@@ -34,71 +34,51 @@ export default function DiscordPopup() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/60 backdrop-blur-md"
+            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
             onClick={dismiss}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
-            className="relative z-10 w-full max-w-sm liquid-glass rounded-3xl p-8 text-center"
+            exit={{ opacity: 0, scale: 0.97, y: 5 }}
+            transition={{ type: "spring", duration: 0.4, bounce: 0.15 }}
+            className="relative z-10 w-full max-w-sm bg-card border border-border rounded-2xl p-7 text-center shadow-2xl"
           >
             <button
               onClick={dismiss}
-              className="absolute top-4 right-4 p-1.5 rounded-xl hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute top-3.5 right-3.5 p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             >
-              <X size={16} />
+              <X size={14} />
             </button>
 
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, type: "spring", bounce: 0.3 }}
-              className="w-16 h-16 rounded-2xl bg-[hsl(235,86%,65%)] flex items-center justify-center mx-auto mb-5 shadow-lg shadow-[hsl(235,86%,65%,0.3)]"
-            >
-              <MessageCircle size={28} className="text-white" />
-            </motion.div>
+            <div className="w-12 h-12 rounded-xl bg-[hsl(235,86%,65%)] flex items-center justify-center mx-auto mb-4">
+              <MessageCircle size={22} className="text-white" />
+            </div>
 
-            <motion.h2
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="text-lg font-semibold text-foreground mb-2"
-            >
+            <h2 className="text-base font-semibold text-foreground mb-1.5">
               Join our Discord
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-sm text-muted-foreground mb-6 leading-relaxed"
-            >
+            </h2>
+            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
               Connect with the PeteZah community. Get updates, share feedback, and hang out.
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="flex flex-col gap-2"
-            >
+            <div className="flex flex-col gap-2">
               <a
                 href="https://discord.gg/petezah"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={dismiss}
-                className="w-full py-3 rounded-2xl bg-[hsl(235,86%,65%)] hover:bg-[hsl(235,86%,60%)] text-white font-medium text-sm transition-all hover:shadow-lg hover:shadow-[hsl(235,86%,65%,0.25)]"
+                className="w-full py-2.5 rounded-xl bg-[hsl(235,86%,65%)] hover:bg-[hsl(235,86%,60%)] text-white font-medium text-sm transition-colors"
               >
                 Open Discord
               </a>
               <button
                 onClick={dismiss}
-                className="w-full py-2.5 rounded-2xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-all"
+                className="w-full py-2 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               >
                 Maybe later
               </button>
-            </motion.div>
+            </div>
           </motion.div>
         </motion.div>
       )}
