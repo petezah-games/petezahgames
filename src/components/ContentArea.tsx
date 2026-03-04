@@ -19,7 +19,7 @@ interface Preset {
 
 const DEFAULT_PRESETS: Preset[] = [
   { id: "games", label: "Games", url: "petezah.app/games", icon: "gamepad", builtIn: true },
-  { id: "ai", label: "AI Mode", url: "petezah.app/ai", icon: "bot", builtIn: true },
+  { id: "ai", label: "AI", url: "petezah.app/ai", icon: "bot", builtIn: true },
   { id: "music", label: "Music", url: "petezah.app/music", icon: "music", builtIn: true },
   { id: "movies", label: "Movies", url: "petezah.app/movies", icon: "film", builtIn: true },
   { id: "apps", label: "Apps", url: "petezah.app/apps", icon: "appwindow", builtIn: true },
@@ -71,7 +71,7 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
       hue: 200 + i * 10,
       saturation: 60 + Math.random() * 25,
       lightness: 40 + Math.random() * 15,
-      opacity: 0.1 + Math.random() * 0.08,
+      opacity: 0.15 + Math.random() * 0.12,
     }));
 
     let time = 0;
@@ -101,8 +101,8 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
         if (b.y > h + b.radius) b.y = -b.radius;
 
         const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.radius);
-        grad.addColorStop(0, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 1.8})`);
-        grad.addColorStop(0.4, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 0.8})`);
+        grad.addColorStop(0, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 2.2})`);
+        grad.addColorStop(0.4, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 1.1})`);
         grad.addColorStop(1, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, 0)`);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
@@ -353,13 +353,13 @@ function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (p
         className="relative z-10 flex flex-col items-center gap-5 max-w-2xl w-full px-6 text-center"
       >
         <div className="flex flex-col items-center gap-1.5">
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">PeteZah</h1>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">PeteZah</h1>
           <p className="text-[11px] text-muted-foreground">Your all-in-one hub</p>
         </div>
 
         <SearchBar />
 
-        <div className="flex flex-wrap justify-center gap-1.5 w-full max-w-md">
+        <div className="flex items-center justify-center gap-1.5 w-full max-w-2xl overflow-x-auto">
           {presets.map((preset) => (
             <PresetCard
               key={preset.id}
