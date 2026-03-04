@@ -1,6 +1,6 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Lock, ArrowLeft, ArrowRight, RotateCw, Share, Bookmark, Bell, Download, Grid3X3, Bot, ShieldCheck } from "lucide-react";
+import { Search, Lock, ArrowLeft, ArrowRight, RotateCw, Share, Bookmark, Bell, Gamepad2, Bot, User, FileText, MessageSquare, MoreVertical, X, Music, Film, AppWindow, ShieldCheck } from "lucide-react";
 import { Tab } from "@/hooks/useBrowserState";
 
 interface ToolbarProps {
@@ -11,10 +11,22 @@ interface ToolbarProps {
   onUrlFocus: (focused: boolean) => void;
   onNavigate: (url: string) => void;
   onNotificationClick: () => void;
+  onCloseTab?: () => void;
+  onCloseAllTabs?: () => void;
 }
 
-export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange, onUrlFocus, onNavigate, onNotificationClick }: ToolbarProps) {
+const MENU_PAGES = [
+  { icon: Gamepad2, label: "Games" },
+  { icon: Bot, label: "AI Mode" },
+  { icon: Music, label: "Music" },
+  { icon: Film, label: "Movies" },
+  { icon: AppWindow, label: "Apps" },
+];
+
+export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange, onUrlFocus, onNavigate, onNotificationClick, onCloseTab, onCloseAllTabs }: ToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isUrlFocused && inputRef.current) {
@@ -23,19 +35,28 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
     }
   }, [isUrlFocused]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
   const displayUrl = isUrlFocused ? urlInput : (activeTab?.url || "");
 
   return (
     <div className="flex items-center gap-2 px-4 h-11 glass-subtle border-b border-border">
       {/* Nav buttons */}
       <div className="flex items-center gap-0.5">
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors">
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/60 hover:text-foreground transition-colors">
           <ArrowLeft size={13} />
         </button>
-        <button className="p-1.5 rounded-lg text-foreground/15 cursor-not-allowed">
+        <button className="p-1.5 rounded-lg text-foreground/20 cursor-not-allowed">
           <ArrowRight size={13} />
         </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors">
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/60 hover:text-foreground transition-colors">
           <RotateCw size={12} />
         </button>
       </div>
@@ -57,7 +78,7 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
             </motion.div>
           ) : (
             <motion.div key="lock" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
-              <Lock size={11} className="text-foreground/35" />
+              <Lock size={11} className="text-foreground/40" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -75,7 +96,7 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
             if (e.key === "Escape") onUrlFocus(false);
           }}
           placeholder="Search or enter URL"
-          className="flex-1 bg-transparent text-[12px] text-foreground/80 placeholder:text-muted-foreground outline-none"
+          className="flex-1 bg-transparent text-[12px] text-foreground/90 placeholder:text-muted-foreground outline-none"
           spellCheck={false}
         />
         {!isUrlFocused && activeTab && (
@@ -87,29 +108,64 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
 
       {/* Right actions */}
       <div className="flex items-center gap-0.5">
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors" title="AI Mode">
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="Games">
+          <Gamepad2 size={13} />
+        </button>
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="AI Mode">
           <Bot size={13} />
         </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors" title="VPN">
-          <ShieldCheck size={13} />
-        </button>
         <div className="w-px h-3.5 bg-border mx-0.5" />
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors">
-          <Download size={13} />
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="Account">
+          <User size={13} />
         </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors">
-          <Bookmark size={13} />
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="Changelog">
+          <FileText size={13} />
         </button>
-        <button onClick={onNotificationClick} className="p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors relative">
-          <Bell size={13} />
-          <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary" />
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="Feedback">
+          <MessageSquare size={13} />
         </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors">
-          <Grid3X3 size={13} />
-        </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors">
-          <Share size={13} />
-        </button>
+
+        {/* 3-dot menu */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors"
+            title="More"
+          >
+            <MoreVertical size={13} />
+          </button>
+          <AnimatePresence>
+            {menuOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="absolute top-full right-0 mt-1.5 w-52 bg-card border border-border rounded-xl shadow-2xl py-1.5 z-50"
+              >
+                <button onClick={() => { onCloseTab?.(); setMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <X size={12} className="text-foreground/40" /> Close Tab
+                </button>
+                <button onClick={() => { onCloseAllTabs?.(); setMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <X size={12} className="text-foreground/40" /> Close All Tabs
+                </button>
+                <div className="h-px bg-border my-1 mx-3" />
+                <button className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Bookmark size={12} className="text-foreground/40" /> Bookmarks
+                </button>
+                <button className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Share size={12} className="text-foreground/40" /> Share
+                </button>
+                <div className="h-px bg-border my-1 mx-3" />
+                {MENU_PAGES.map(({ icon: Icon, label }) => (
+                  <button key={label} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                    <Icon size={12} className="text-foreground/40" /> {label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ export default function DiscordPopup() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/80 backdrop-blur-md"
             onClick={dismiss}
           />
           <motion.div
@@ -46,7 +46,7 @@ export default function DiscordPopup() {
           >
             <button
               onClick={dismiss}
-              className="absolute top-3.5 right-3.5 p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute top-3.5 right-3.5 p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors"
             >
               <X size={14} />
             </button>
@@ -58,7 +58,7 @@ export default function DiscordPopup() {
             <h2 className="text-base font-semibold text-foreground mb-1.5">
               Join our Discord
             </h2>
-            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+            <p className="text-sm text-foreground/50 mb-5 leading-relaxed">
               Connect with the PeteZah community. Get updates, share feedback, and hang out.
             </p>
 
@@ -74,7 +74,7 @@ export default function DiscordPopup() {
               </a>
               <button
                 onClick={dismiss}
-                className="w-full py-2 rounded-xl text-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                className="w-full py-2 rounded-xl text-sm text-foreground/40 hover:text-foreground hover:bg-accent transition-colors"
               >
                 Maybe later
               </button>

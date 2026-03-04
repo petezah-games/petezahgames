@@ -41,6 +41,8 @@ export default function ArcBrowser() {
           onUrlFocus={state.setIsUrlFocused}
           onNavigate={state.navigateToUrl}
           onNotificationClick={() => setShowNotifications(!showNotifications)}
+          onCloseTab={() => state.activeTab && state.closeTab(state.activeTab.id)}
+          onCloseAllTabs={state.closeAllTabs}
         />
         <ContentArea activeTab={state.activeTab} splitTab={splitTab} />
         <StatusBar tabCount={state.tabs.length} spaceCount={state.spaces.length} />

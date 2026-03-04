@@ -2,6 +2,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Pin, SplitSquareHorizontal } from "lucide-react";
 import { Tab } from "@/hooks/useBrowserState";
 
+function getFaviconUrl(url: string): string {
+  try {
+    const clean = url.startsWith("http") ? url : `https://${url}`;
+    return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(clean)}&size=32`;
+  } catch {
+    return "";
+  }
+}
+
 interface TabItemProps {
   tab: Tab;
   isActive: boolean;
@@ -14,6 +23,9 @@ interface TabItemProps {
 }
 
 export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, onClose, onTogglePin, onToggleSplit }: TabItemProps) {
+  const faviconSrc = tab.favicon || getFaviconUrl(tab.url);
+  const showFavicon = tab.url !== "about:blank" && faviconSrc;
+
   if (collapsed) {
     return (
       <motion.button
@@ -23,7 +35,7 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
         exit={{ opacity: 0, scale: 0.8 }}
         onClick={onClick}
         className={`relative w-8 h-8 rounded-xl flex items-center justify-center text-xs font-medium transition-all duration-150 ${
-          isActive ? "glass-heavy text-foreground" : "hover:bg-accent/50 text-muted-foreground"
+          isActive ? "glass-heavy text-foreground" : "hover:bg-accent/50 text-foreground/60"
         }`}
         title={tab.title}
       >
@@ -34,7 +46,11 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
             style={{ background: "hsl(0 0% 100% / 0.06)" }}
           />
         )}
-        <span className="relative z-10 text-[11px]">{tab.title[0]}</span>
+        {showFavicon ? (
+          <img src={faviconSrc} alt="" className="relative z-10 w-4 h-4 rounded-sm" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        ) : (
+          <span className="relative z-10 text-[11px]">{tab.title[0]}</span>
+        )}
       </motion.button>
     );
   }
@@ -57,23 +73,27 @@ export default function TabItem({ tab, isActive, isPinned, collapsed, onClick, o
           className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-foreground/40"
         />
       )}
-      <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        isActive ? "bg-foreground/10 text-foreground" : "bg-accent text-muted-foreground"
+      <div className={`w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden ${
+        isActive ? "bg-foreground/10" : "bg-accent"
       }`}>
-        <span className="text-[10px] font-medium">{tab.title[0]}</span>
+        {showFavicon ? (
+          <img src={faviconSrc} alt="" className="w-3.5 h-3.5 rounded-sm" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+        ) : (
+          <span className="text-[10px] font-medium text-foreground/60">{tab.title[0]}</span>
+        )}
       </div>
-      <span className={`flex-1 truncate text-[13px] ${isActive ? "text-foreground font-medium" : "text-secondary-foreground"}`}>
+      <span className={`flex-1 truncate text-[13px] ${isActive ? "text-foreground font-medium" : "text-foreground/70"}`}>
         {tab.title}
       </span>
       <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button onClick={(e) => { e.stopPropagation(); onToggleSplit(); }} className="p-1 rounded-lg hover:bg-accent transition-colors">
-          <SplitSquareHorizontal size={11} className="text-muted-foreground" />
+          <SplitSquareHorizontal size={11} className="text-foreground/50" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); onTogglePin(); }} className="p-1 rounded-lg hover:bg-accent transition-colors">
-          <Pin size={11} className={tab.pinned ? "text-foreground" : "text-muted-foreground"} />
+          <Pin size={11} className={tab.pinned ? "text-foreground" : "text-foreground/50"} />
         </button>
         <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="p-1 rounded-lg hover:bg-destructive/20 transition-colors">
-          <X size={11} className="text-muted-foreground" />
+          <X size={11} className="text-foreground/50" />
         </button>
       </div>
     </motion.div>
@@ -110,7 +130,7 @@ export function TabList({ label, tabs, activeTabId, pinned, collapsed, onSelect,
   return (
     <div className="px-2">
       <div className="px-2 py-1.5">
-        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">{label}</span>
+        <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-foreground/40">{label}</span>
       </div>
       <div className="flex flex-col gap-0.5">
         <AnimatePresence mode="popLayout">

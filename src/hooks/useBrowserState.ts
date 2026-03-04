@@ -22,13 +22,18 @@ const DEFAULT_SPACES: Space[] = [
 
 const DEFAULT_TABS: Tab[] = [
   { id: "1", title: "PeteZah Home", url: "petezah.app", pinned: false, spaceId: "main" },
-  { id: "2", title: "Games", url: "petezah.app/games", pinned: false, spaceId: "main" },
-  { id: "3", title: "AI Mode", url: "petezah.app/ai", pinned: false, spaceId: "main" },
-  { id: "4", title: "Music", url: "petezah.app/music", pinned: false, spaceId: "main" },
-  { id: "5", title: "Movies", url: "petezah.app/movies", pinned: false, spaceId: "main" },
 ];
 
-let tabCounter = 6;
+let tabCounter = 2;
+
+function getFavicon(url: string): string {
+  try {
+    const clean = url.startsWith("http") ? url : `https://${url}`;
+    return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(clean)}&size=32`;
+  } catch {
+    return "";
+  }
+}
 
 export function useBrowserState() {
   const [spaces] = useState<Space[]>(DEFAULT_SPACES);
@@ -67,6 +72,18 @@ export function useBrowserState() {
     if (splitTabId === id) setSplitTabId(null);
   }, [activeTabId, splitTabId]);
 
+  const closeAllTabs = useCallback(() => {
+    const newTab: Tab = {
+      id: String(tabCounter++),
+      title: "New Tab",
+      url: "about:blank",
+      spaceId: activeSpaceId,
+    };
+    setTabs([newTab]);
+    setActiveTabId(newTab.id);
+    setSplitTabId(null);
+  }, [activeSpaceId]);
+
   const togglePin = useCallback((id: string) => {
     setTabs((prev) => prev.map((t) => (t.id === id ? { ...t, pinned: !t.pinned } : t)));
   }, []);
@@ -78,9 +95,10 @@ export function useBrowserState() {
   const navigateToUrl = useCallback((url: string) => {
     if (!url.trim()) return;
     const formatted = url.includes(".") ? url : `search.petezah.app?q=${encodeURIComponent(url)}`;
+    const favicon = getFavicon(formatted);
     setTabs((prev) =>
       prev.map((t) =>
-        t.id === activeTabId ? { ...t, url: formatted, title: formatted.split("/")[0] || formatted } : t
+        t.id === activeTabId ? { ...t, url: formatted, title: formatted.split("/")[0] || formatted, favicon } : t
       )
     );
     setUrlInput("");
@@ -91,6 +109,6 @@ export function useBrowserState() {
     spaces, tabs, activeTabId, activeSpaceId, activeTab, pinnedTabs, unpinnedTabs,
     sidebarCollapsed, splitTabId, urlInput, isUrlFocused,
     setActiveTabId, setActiveSpaceId, setSidebarCollapsed, setUrlInput, setIsUrlFocused,
-    addTab, closeTab, togglePin, toggleSplit, navigateToUrl,
+    addTab, closeTab, closeAllTabs, togglePin, toggleSplit, navigateToUrl,
   };
 }
