@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Lock, ArrowLeft, ArrowRight, RotateCw, Share, Bookmark, Bell, Gamepad2, Bot, User, FileText, MessageSquare, MoreVertical, X, Music, Film, AppWindow, ShieldCheck } from "lucide-react";
+import { Search, Lock, ArrowLeft, ArrowRight, RotateCw, Share, Bookmark, Bell, Gamepad2, Bot, User, FileText, MessageSquare, MoreVertical, X, Music, Film, AppWindow, ShieldCheck, Plus, ZoomIn, ZoomOut, History, Maximize, Copy, Download } from "lucide-react";
 import { Tab } from "@/hooks/useBrowserState";
 
 interface ToolbarProps {
@@ -13,17 +13,16 @@ interface ToolbarProps {
   onNotificationClick: () => void;
   onCloseTab?: () => void;
   onCloseAllTabs?: () => void;
+  onNewTab?: () => void;
+  zoomLevel?: number;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  onResetZoom?: () => void;
 }
 
-const MENU_PAGES = [
-  { icon: Gamepad2, label: "Games" },
-  { icon: Bot, label: "AI Mode" },
-  { icon: Music, label: "Music" },
-  { icon: Film, label: "Movies" },
-  { icon: AppWindow, label: "Apps" },
-];
+const ZOOM_PRESETS = [50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200];
 
-export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange, onUrlFocus, onNavigate, onNotificationClick, onCloseTab, onCloseAllTabs }: ToolbarProps) {
+export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange, onUrlFocus, onNavigate, onNotificationClick, onCloseTab, onCloseAllTabs, onNewTab, zoomLevel = 100, onZoomIn, onZoomOut, onResetZoom }: ToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -111,7 +110,7 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
         <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="Games">
           <Gamepad2 size={13} />
         </button>
-        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="AI Mode">
+        <button className="p-1.5 rounded-lg hover:bg-accent text-foreground/50 hover:text-foreground transition-colors" title="AI">
           <Bot size={13} />
         </button>
         <div className="w-px h-3.5 bg-border mx-0.5" />
@@ -141,27 +140,86 @@ export default function Toolbar({ activeTab, urlInput, isUrlFocused, onUrlChange
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -4 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-full right-0 mt-1.5 w-52 bg-card border border-border rounded-xl shadow-2xl py-1.5 z-50"
+                className="absolute top-full right-0 mt-1.5 w-64 bg-card border border-border rounded-xl shadow-2xl py-1 z-50"
               >
-                <button onClick={() => { onCloseTab?.(); setMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
-                  <X size={12} className="text-foreground/40" /> Close Tab
+                {/* Tab actions */}
+                <button onClick={() => { onNewTab?.(); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Plus size={13} className="text-foreground/40" />
+                  <span className="flex-1 text-left">New Tab</span>
+                  <kbd className="text-[10px] text-muted-foreground font-mono">Ctrl+T</kbd>
                 </button>
-                <button onClick={() => { onCloseAllTabs?.(); setMenuOpen(false); }} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
-                  <X size={12} className="text-foreground/40" /> Close All Tabs
+                <button onClick={() => { onCloseTab?.(); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <X size={13} className="text-foreground/40" />
+                  <span className="flex-1 text-left">Close Tab</span>
+                  <kbd className="text-[10px] text-muted-foreground font-mono">Ctrl+W</kbd>
                 </button>
+                <button onClick={() => { onCloseAllTabs?.(); setMenuOpen(false); }} className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <X size={13} className="text-foreground/40" />
+                  <span className="flex-1 text-left">Close All Tabs</span>
+                </button>
+
                 <div className="h-px bg-border my-1 mx-3" />
-                <button className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
-                  <Bookmark size={12} className="text-foreground/40" /> Bookmarks
-                </button>
-                <button className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
-                  <Share size={12} className="text-foreground/40" /> Share
-                </button>
-                <div className="h-px bg-border my-1 mx-3" />
-                {MENU_PAGES.map(({ icon: Icon, label }) => (
-                  <button key={label} className="w-full flex items-center gap-2.5 px-3.5 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
-                    <Icon size={12} className="text-foreground/40" /> {label}
+
+                {/* Zoom controls - Chrome style */}
+                <div className="flex items-center gap-1 px-4 py-1.5">
+                  <span className="text-[12px] text-foreground/60 mr-auto">Zoom</span>
+                  <button onClick={() => { onZoomOut?.(); }} className="p-1 rounded hover:bg-accent text-foreground/60 hover:text-foreground transition-colors">
+                    <ZoomOut size={13} />
                   </button>
-                ))}
+                  <button onClick={() => { onResetZoom?.(); }} className="px-2 py-0.5 rounded hover:bg-accent text-[11px] font-mono text-foreground/70 min-w-[40px] text-center">
+                    {zoomLevel}%
+                  </button>
+                  <button onClick={() => { onZoomIn?.(); }} className="p-1 rounded hover:bg-accent text-foreground/60 hover:text-foreground transition-colors">
+                    <ZoomIn size={13} />
+                  </button>
+                  <button onClick={() => { document.documentElement.requestFullscreen?.(); setMenuOpen(false); }} className="p-1 rounded hover:bg-accent text-foreground/60 hover:text-foreground transition-colors ml-1">
+                    <Maximize size={13} />
+                  </button>
+                </div>
+
+                <div className="h-px bg-border my-1 mx-3" />
+
+                {/* History */}
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <History size={13} className="text-foreground/40" />
+                  <span className="flex-1 text-left">History</span>
+                  <kbd className="text-[10px] text-muted-foreground font-mono">Ctrl+H</kbd>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Download size={13} className="text-foreground/40" />
+                  <span className="flex-1 text-left">Downloads</span>
+                  <kbd className="text-[10px] text-muted-foreground font-mono">Ctrl+J</kbd>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Bookmark size={13} className="text-foreground/40" />
+                  <span className="flex-1 text-left">Bookmarks</span>
+                  <kbd className="text-[10px] text-muted-foreground font-mono">Ctrl+D</kbd>
+                </button>
+
+                <div className="h-px bg-border my-1 mx-3" />
+
+                {/* Category pages */}
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Gamepad2 size={13} className="text-foreground/40" /> <span className="flex-1 text-left">Games</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Bot size={13} className="text-foreground/40" /> <span className="flex-1 text-left">AI</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Music size={13} className="text-foreground/40" /> <span className="flex-1 text-left">Music</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Film size={13} className="text-foreground/40" /> <span className="flex-1 text-left">Movies</span>
+                </button>
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <AppWindow size={13} className="text-foreground/40" /> <span className="flex-1 text-left">Apps</span>
+                </button>
+
+                <div className="h-px bg-border my-1 mx-3" />
+
+                <button className="w-full flex items-center gap-3 px-4 py-2 text-[12px] text-foreground/80 hover:bg-accent hover:text-foreground transition-colors">
+                  <Share size={13} className="text-foreground/40" /> <span className="flex-1 text-left">Share</span>
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

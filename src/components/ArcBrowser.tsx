@@ -13,6 +13,7 @@ export default function ArcBrowser() {
   const splitTab = state.splitTabId ? state.tabs.find((t) => t.id === state.splitTabId) : undefined;
   const [showAccount, setShowAccount] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-background">
@@ -43,6 +44,11 @@ export default function ArcBrowser() {
           onNotificationClick={() => setShowNotifications(!showNotifications)}
           onCloseTab={() => state.activeTab && state.closeTab(state.activeTab.id)}
           onCloseAllTabs={state.closeAllTabs}
+          onNewTab={state.addTab}
+          zoomLevel={zoomLevel}
+          onZoomIn={() => setZoomLevel((z) => Math.min(z + 10, 200))}
+          onZoomOut={() => setZoomLevel((z) => Math.max(z - 10, 50))}
+          onResetZoom={() => setZoomLevel(100)}
         />
         <ContentArea activeTab={state.activeTab} splitTab={splitTab} />
         <StatusBar tabCount={state.tabs.length} spaceCount={state.spaces.length} />
