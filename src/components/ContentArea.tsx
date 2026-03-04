@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Search, ArrowUpRight, Bot, Music, Film, Gamepad2, AppWindow, ShieldCheck } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, ArrowUpRight, Bot, Music, Film, Gamepad2, AppWindow, ShieldCheck, Pencil, Trash2, Plus, Upload, X } from "lucide-react";
 import { Tab } from "@/hooks/useBrowserState";
 
 interface ContentAreaProps {
@@ -9,14 +9,39 @@ interface ContentAreaProps {
   onNavigateToPage?: (page: string) => void;
 }
 
-const CATEGORIES = [
-  { id: "ai", icon: Bot, label: "AI Mode", desc: "Chat & create" },
-  { id: "music", icon: Music, label: "Music", desc: "Stream" },
-  { id: "movies", icon: Film, label: "Movies", desc: "Watch" },
-  { id: "games", icon: Gamepad2, label: "Games", desc: "Play" },
-  { id: "apps", icon: AppWindow, label: "Apps", desc: "Tools" },
-  { id: "vpn", icon: ShieldCheck, label: "VPN", desc: "Private" },
+interface Preset {
+  id: string;
+  label: string;
+  url: string;
+  icon: string; // lucide icon id or data URL
+  builtIn?: boolean;
+}
+
+const DEFAULT_PRESETS: Preset[] = [
+  { id: "games", label: "Games", url: "petezah.app/games", icon: "gamepad", builtIn: true },
+  { id: "ai", label: "AI Mode", url: "petezah.app/ai", icon: "bot", builtIn: true },
+  { id: "music", label: "Music", url: "petezah.app/music", icon: "music", builtIn: true },
+  { id: "movies", label: "Movies", url: "petezah.app/movies", icon: "film", builtIn: true },
+  { id: "apps", label: "Apps", url: "petezah.app/apps", icon: "appwindow", builtIn: true },
+  { id: "vpn", label: "VPN", url: "petezah.app/vpn", icon: "shield", builtIn: true },
 ];
+
+const ICON_MAP: Record<string, typeof Bot> = {
+  bot: Bot,
+  music: Music,
+  film: Film,
+  gamepad: Gamepad2,
+  appwindow: AppWindow,
+  shield: ShieldCheck,
+};
+
+function getStoredPresets(): Preset[] {
+  try {
+    const stored = localStorage.getItem("petezah-presets");
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return DEFAULT_PRESETS;
+}
 
 function FluidCanvas({ enabled }: { enabled: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -37,16 +62,16 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
     resize();
     window.addEventListener("resize", resize);
 
-    const blobs = Array.from({ length: 5 }, (_, i) => ({
+    const blobs = Array.from({ length: 6 }, (_, i) => ({
       x: Math.random() * canvas.offsetWidth,
       y: Math.random() * canvas.offsetHeight,
       vx: (Math.random() - 0.5) * 0.3,
       vy: (Math.random() - 0.5) * 0.3,
-      radius: 120 + Math.random() * 180,
-      hue: 200 + i * 12,
-      saturation: 50 + Math.random() * 30,
-      lightness: 35 + Math.random() * 20,
-      opacity: 0.06 + Math.random() * 0.06,
+      radius: 140 + Math.random() * 200,
+      hue: 200 + i * 10,
+      saturation: 60 + Math.random() * 25,
+      lightness: 40 + Math.random() * 15,
+      opacity: 0.1 + Math.random() * 0.08,
     }));
 
     let time = 0;
@@ -76,19 +101,19 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
         if (b.y > h + b.radius) b.y = -b.radius;
 
         const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.radius);
-        grad.addColorStop(0, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 1.5})`);
-        grad.addColorStop(0.5, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 0.5})`);
+        grad.addColorStop(0, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 1.8})`);
+        grad.addColorStop(0.4, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 0.8})`);
         grad.addColorStop(1, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, 0)`);
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
       });
 
-      // Subtle white wisps
+      // White wisps - bolder
       for (let i = 0; i < 3; i++) {
         const wx = w * (0.2 + i * 0.3) + Math.sin(time * 0.5 + i) * 60;
         const wy = h * (0.3 + i * 0.2) + Math.cos(time * 0.4 + i * 2) * 40;
-        const wg = ctx.createRadialGradient(wx, wy, 0, wx, wy, 100);
-        wg.addColorStop(0, "hsla(210, 60%, 90%, 0.04)");
+        const wg = ctx.createRadialGradient(wx, wy, 0, wx, wy, 120);
+        wg.addColorStop(0, "hsla(210, 70%, 90%, 0.07)");
         wg.addColorStop(1, "hsla(210, 60%, 90%, 0)");
         ctx.fillStyle = wg;
         ctx.fillRect(0, 0, w, h);
@@ -122,12 +147,28 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
 
 function SearchBar() {
   const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
 
   return (
     <div className="w-full max-w-lg">
       <div className="flex items-center gap-3 rounded-2xl glass-heavy px-5 py-3 transition-all duration-200 focus-within:ring-1 focus-within:ring-foreground/20">
         <Search size={15} className="text-muted-foreground flex-shrink-0" />
         <input
+          ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search anything..."
@@ -135,36 +176,125 @@ function SearchBar() {
           spellCheck={false}
         />
         <kbd className="hidden sm:flex items-center gap-0.5 px-2 py-0.5 rounded-lg bg-accent border border-border text-[10px] font-mono text-muted-foreground">
-          Ctrl+K
+          {isMac ? "⌘" : "Ctrl"}+K
         </kbd>
       </div>
     </div>
   );
 }
 
-function CategoryCard({ icon: Icon, label, desc, onClick }: { icon: typeof Bot; label: string; desc: string; onClick: () => void }) {
+function PresetEditModal({ preset, onSave, onDelete, onClose }: {
+  preset: Preset | null;
+  onSave: (p: Preset) => void;
+  onDelete?: () => void;
+  onClose: () => void;
+}) {
+  const [label, setLabel] = useState(preset?.label || "");
+  const [url, setUrl] = useState(preset?.url || "");
+  const [iconData, setIconData] = useState(preset?.icon || "");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setIconData(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = () => {
+    if (!label.trim()) return;
+    onSave({
+      id: preset?.id || String(Date.now()),
+      label: label.trim(),
+      url: url.trim() || "about:blank",
+      icon: iconData || "bot",
+    });
+  };
+
   return (
-    <motion.button
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+    >
+      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97, y: 5 }}
+        className="relative z-10 w-full max-w-xs bg-card border border-border rounded-2xl p-5 shadow-2xl"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-foreground">{preset ? "Edit Preset" : "Add Preset"}</h3>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-accent text-muted-foreground"><X size={14} /></button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Title</label>
+            <input value={label} onChange={(e) => setLabel(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/30" />
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">URL</label>
+            <input value={url} onChange={(e) => setUrl(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/30" />
+          </div>
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Icon</label>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+            <button onClick={() => fileRef.current?.click()} className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors">
+              <Upload size={12} />
+              <span>{iconData?.startsWith("data:") ? "Image selected" : "Upload image"}</span>
+            </button>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button onClick={handleSave} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">Save</button>
+            {onDelete && (
+              <button onClick={onDelete} className="px-3 py-2 rounded-xl bg-destructive/10 text-destructive text-sm hover:bg-destructive/20 transition-colors">
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function PresetCard({ preset, onClick, onEdit }: { preset: Preset; onClick: () => void; onEdit: () => void }) {
+  const IconComp = ICON_MAP[preset.icon];
+  const isCustomImage = preset.icon?.startsWith("data:");
+
+  return (
+    <motion.div
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.97 }}
+      className="category-card group relative flex flex-col items-center gap-1.5 text-center py-2 px-2 cursor-pointer"
       onClick={onClick}
-      className="category-card group flex flex-col items-center gap-1.5 text-center py-2.5 px-2"
     >
-      <div className="w-8 h-8 rounded-xl bg-accent border border-border flex items-center justify-center">
-        <Icon size={14} className="text-muted-foreground" />
+      <button
+        onClick={(e) => { e.stopPropagation(); onEdit(); }}
+        className="absolute top-1.5 right-1.5 p-1 rounded-md bg-accent/80 border border-border opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-accent"
+      >
+        <Pencil size={9} className="text-foreground/60" />
+      </button>
+      <div className="w-8 h-8 rounded-xl bg-accent/60 border border-border flex items-center justify-center overflow-hidden">
+        {isCustomImage ? (
+          <img src={preset.icon} alt={preset.label} className="w-5 h-5 object-cover rounded" />
+        ) : IconComp ? (
+          <IconComp size={14} className="text-foreground/40" />
+        ) : (
+          <span className="text-[10px] text-foreground/40">{preset.label[0]}</span>
+        )}
       </div>
-      <div>
-        <p className="text-[11px] font-medium text-foreground">{label}</p>
-        <p className="text-[9px] text-muted-foreground">{desc}</p>
-      </div>
-      <ArrowUpRight size={9} className="absolute top-2 right-2 text-transparent group-hover:text-foreground/30 transition-all" />
-    </motion.button>
+      <p className="text-[11px] font-medium text-foreground/80">{preset.label}</p>
+    </motion.div>
   );
 }
 
 function FeaturePage({ page, onBack }: { page: string; onBack: () => void }) {
-  const cat = CATEGORIES.find((c) => c.id === page);
-  const Icon = cat?.icon || Bot;
+  const preset = DEFAULT_PRESETS.find((c) => c.id === page);
+  const IconComp = ICON_MAP[preset?.icon || "bot"] || Bot;
 
   return (
     <div className="flex-1 flex flex-col relative overflow-hidden">
@@ -180,10 +310,10 @@ function FeaturePage({ page, onBack }: { page: string; onBack: () => void }) {
         className="flex-1 flex flex-col items-center justify-center gap-6 px-6 relative z-10"
       >
         <div className="w-16 h-16 rounded-2xl bg-accent border border-border flex items-center justify-center">
-          <Icon size={28} className="text-foreground/70" />
+          <IconComp size={28} className="text-foreground/50" />
         </div>
-        <h1 className="text-2xl font-semibold text-foreground">{cat?.label}</h1>
-        <p className="text-muted-foreground text-sm max-w-md text-center">{cat?.desc} — connect your backend to bring this to life.</p>
+        <h1 className="text-2xl font-semibold text-foreground">{preset?.label}</h1>
+        <p className="text-muted-foreground text-sm max-w-md text-center">Connect your backend to bring this to life.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg w-full mt-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="glass rounded-2xl p-4 flex flex-col gap-2">
@@ -201,6 +331,13 @@ function FeaturePage({ page, onBack }: { page: string; onBack: () => void }) {
 function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (page: string) => void }) {
   const [activePage, setActivePage] = useState<string | null>(null);
   const [fluidCursor, setFluidCursor] = useState(true);
+  const [presets, setPresets] = useState<Preset[]>(getStoredPresets);
+  const [editingPreset, setEditingPreset] = useState<Preset | null | "new">(null);
+
+  const savePresets = useCallback((updated: Preset[]) => {
+    setPresets(updated);
+    localStorage.setItem("petezah-presets", JSON.stringify(updated));
+  }, []);
 
   if (activePage) {
     return <FeaturePage page={activePage} onBack={() => setActivePage(null)} />;
@@ -222,16 +359,26 @@ function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (p
 
         <SearchBar />
 
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 w-full max-w-md">
-          {CATEGORIES.map((cat) => (
-            <CategoryCard
-              key={cat.id}
-              icon={cat.icon}
-              label={cat.label}
-              desc={cat.desc}
-              onClick={() => setActivePage(cat.id)}
+        <div className="flex flex-wrap justify-center gap-1.5 w-full max-w-md">
+          {presets.map((preset) => (
+            <PresetCard
+              key={preset.id}
+              preset={preset}
+              onClick={() => setActivePage(preset.id)}
+              onEdit={() => setEditingPreset(preset)}
             />
           ))}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => setEditingPreset("new")}
+            className="category-card flex flex-col items-center gap-1.5 text-center py-2 px-2"
+          >
+            <div className="w-8 h-8 rounded-xl bg-accent/40 border border-dashed border-border flex items-center justify-center">
+              <Plus size={14} className="text-foreground/30" />
+            </div>
+            <p className="text-[11px] text-muted-foreground">Add</p>
+          </motion.button>
         </div>
 
         <button
@@ -242,6 +389,27 @@ function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (p
           Fluid cursor {fluidCursor ? "on" : "off"}
         </button>
       </motion.div>
+
+      <AnimatePresence>
+        {editingPreset && (
+          <PresetEditModal
+            preset={editingPreset === "new" ? null : editingPreset}
+            onSave={(p) => {
+              if (editingPreset === "new") {
+                savePresets([...presets, p]);
+              } else {
+                savePresets(presets.map((x) => (x.id === p.id ? p : x)));
+              }
+              setEditingPreset(null);
+            }}
+            onDelete={editingPreset !== "new" ? () => {
+              savePresets(presets.filter((x) => x.id !== (editingPreset as Preset).id));
+              setEditingPreset(null);
+            } : undefined}
+            onClose={() => setEditingPreset(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

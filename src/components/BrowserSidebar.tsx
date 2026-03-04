@@ -109,7 +109,7 @@ export default function Sidebar({
                 <span className="text-[10px]">Downloads</span>
               </button>
             </div>
-            <button onClick={onAddTab} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass hover:bg-accent transition-all text-xs text-foreground/60 hover:text-foreground">
+            <button onClick={onAddTab} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl glass hover:bg-accent transition-all text-xs text-foreground/70 hover:text-foreground">
               <Plus size={12} />
               <span className="tracking-wide">New Tab</span>
             </button>
@@ -120,7 +120,7 @@ export default function Sidebar({
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[11px] text-foreground/80">Guest</span>
-                  <span className="text-[9px] text-muted-foreground">Sign in</span>
+                  <span className="text-[9px] text-foreground/40">Sign in</span>
                 </div>
               </button>
               <button className="p-2 rounded-lg hover:bg-accent transition-all text-foreground/50 hover:text-foreground">
