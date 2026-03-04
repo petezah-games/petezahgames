@@ -13,7 +13,7 @@ interface Preset {
   id: string;
   label: string;
   url: string;
-  icon: string; // lucide icon id or data URL
+  icon: string;
   builtIn?: boolean;
 }
 
@@ -108,7 +108,6 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
         ctx.fillRect(0, 0, w, h);
       });
 
-      // White wisps - bolder
       for (let i = 0; i < 3; i++) {
         const wx = w * (0.2 + i * 0.3) + Math.sin(time * 0.5 + i) * 60;
         const wy = h * (0.3 + i * 0.2) + Math.cos(time * 0.4 + i * 2) * 40;
@@ -359,7 +358,7 @@ function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (p
 
         <SearchBar />
 
-        <div className="flex items-center justify-center gap-1.5 w-full max-w-2xl overflow-x-auto">
+        <div className="flex items-center justify-center gap-1.5 w-full max-w-2xl overflow-x-auto overflow-y-visible py-2">
           {presets.map((preset) => (
             <PresetCard
               key={preset.id}
@@ -444,7 +443,7 @@ function EmptyState() {
 
 export default function ContentArea({ activeTab, splitTab, onNavigateToPage }: ContentAreaProps) {
   return (
-    <div className="flex-1 flex overflow-hidden rounded-tl-2xl border-t border-l border-border">
+    <div className="flex-1 flex overflow-hidden">
       {activeTab ? (
         <>
           <TabContent tab={activeTab} onNavigateToPage={onNavigateToPage} />
