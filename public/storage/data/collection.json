@@ -73,12 +73,6 @@
       "categories": []
     },
     {
-      "label": "Retro Bowl College",
-      "imageUrl": "https://cdn.jsdelivr.net/gh/gn-math/covers@main/34.png",
-      "url": "/iframe.html?url=/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/34.html",
-      "categories": []
-    },
-    {
       "label": "Sky Riders",
       "url": "/iframe.html?url=/storage/ag/arsenic/sky-riders/",
       "imageUrl": "/storage/images/main3/skyriders.png",
@@ -92,19 +86,13 @@
     },
     {
       "label": "Buckshot Roulette",
-      "url": "/iframe.html?url=/storage/ag/arsenic/buckshot-roullete/",
+      "url": "/iframe.html?url=/storage/ag/gn/205-f.html",
       "imageUrl": "https://cdn.jsdelivr.net/gh/genizy/web-port@main/buckshot-roulette/buckshot-roulette.icon.png",
       "categories": ["skill", "strategy"]
     },
     {
-      "label": "Space Waves",
-      "url": "/iframe.html?url=/storage/ag/originals/spacewaves",
-      "imageUrl": "/storage/images/main/spacewaves.jpg",
-      "categories": ["skill"]
-    },
-    {
-      "label": "slope",
-      "url": "/iframe.html?url=/storage/ag/echo/slope",
+      "label": "Slope",
+      "url": "/iframe.html?url=/storage/ag/gn/198.html",
       "imageUrl": "/storage/ag/echo/slope/slope4.jpeg",
       "categories": [
         "Action",
@@ -113,7 +101,7 @@
     },
     {
       "label": "Fortnite",
-      "url": "/iframe.html?url=/storage/ag/a/geforce",
+      "url": "/iframe.html?url=/storage/ag/apps/geforce",
       "imageUrl": "/storage/images/main/fakefortnight.jpg",
       "categories": ["shooting"]
     },
@@ -171,16 +159,6 @@
       "imageUrl": "/storage/images/main3/animalsvolleyball.png",
       "categories": [
         "Sports"
-      ]
-    },
-    {
-      "label": "ArmedForces.io",
-      "url": "/iframe.html?url=/storage/ag/arsenic/armed-forces-io",
-      "imageUrl": "/storage/images/main3/armedforcesio.png",
-      "categories": [
-        "Io",
-        "Action",
-        "Shooting"
       ]
     },
     {

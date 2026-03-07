@@ -1,12 +1,46 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ArrowUpRight, Bot, Music, Film, Gamepad2, AppWindow, ShieldCheck, Pencil, Trash2, Plus, Upload, X } from "lucide-react";
+import {
+  Search,
+  Bot,
+  Music,
+  Film,
+  Gamepad2,
+  AppWindow,
+  ShieldCheck,
+  Pencil,
+  Trash2,
+  Plus,
+  Upload,
+  X,
+  MessageCircle,
+  type LucideIcon,
+} from "lucide-react";
 import { Tab } from "@/hooks/useBrowserState";
+import GamesPage from "./GamesPage";
+import GameViewerPage from "./GameViewerPage";
+import AIPage from "./AIPage";
+import AppsPage from "./AppsPage";
+import MusicPage from "./MusicPage";
+import ChatPage from "./ChatPage";
+import MoviesPage from "./MoviesPage";
+import AppViewerPage from "./AppViewerPage";
+import ChangelogPage from "./ChangelogPage";
+import FeedbackPage from "./FeedbackPage";
+import AccountPage from "./AccountPage";
+import HistoryPage from "./HistoryPage";
+import ExtensionsPage from "./ExtensionsPage";
+import BookmarksPage from "./BookmarksPage";
+import { recordHistory } from "./HistoryPage";
+import { getExtensions, urlMatchesPattern } from "./ExtensionsPage";
 
 interface ContentAreaProps {
+  tabs: Tab[];
   activeTab: Tab | undefined;
   splitTab: Tab | undefined;
-  onNavigateToPage?: (page: string) => void;
+  onNavigate: (url: string) => void;
+  onNewTab: () => void;
+  onCloseSplit: () => void;
 }
 
 interface Preset {
@@ -18,22 +52,334 @@ interface Preset {
 }
 
 const DEFAULT_PRESETS: Preset[] = [
-  { id: "games", label: "Games", url: "petezah.app/games", icon: "gamepad", builtIn: true },
-  { id: "ai", label: "AI", url: "petezah.app/ai", icon: "bot", builtIn: true },
-  { id: "music", label: "Music", url: "petezah.app/music", icon: "music", builtIn: true },
-  { id: "movies", label: "Movies", url: "petezah.app/movies", icon: "film", builtIn: true },
-  { id: "apps", label: "Apps", url: "petezah.app/apps", icon: "appwindow", builtIn: true },
-  { id: "vpn", label: "VPN", url: "petezah.app/vpn", icon: "shield", builtIn: true },
+  {
+    id: "games",
+    label: "Games",
+    url: "petezah://games",
+    icon: "gamepad",
+    builtIn: true,
+  },
+  {
+    id: "ai",
+    label: "AI",
+    url: "petezah://ai",
+    icon: "bot",
+    builtIn: true,
+  },
+  {
+    id: "music",
+    label: "Music",
+    url: "petezah://music",
+    icon: "music",
+    builtIn: true,
+  },
+  {
+    id: "movies",
+    label: "Movies",
+    url: "petezah://movies",
+    icon: "film",
+    builtIn: true,
+  },
+  {
+    id: "apps",
+    label: "Apps",
+    url: "petezah://apps",
+    icon: "appwindow",
+    builtIn: true,
+  },
+  {
+    id: "chat",
+    label: "Chat",
+    url: "petezah://chat",
+    icon: "chat",
+    builtIn: true,
+  },
 ];
 
-const ICON_MAP: Record<string, typeof Bot> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   bot: Bot,
   music: Music,
   film: Film,
   gamepad: Gamepad2,
   appwindow: AppWindow,
-  shield: ShieldCheck,
+  chat: MessageCircle,
 };
+
+const VPN_REGIONS = [
+  {
+    id: "default",
+    label: "Default",
+    sublabel: "International",
+    wisp: "/wisp/",
+    config: "config.js",
+    flag: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="w-4 h-4"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+        <path d="M2 12h20" />
+      </svg>
+    ),
+  },
+  {
+    id: "1",
+    label: "Quebec",
+    sublabel: "Canada",
+    wisp: "/api/alt-wisp-5/",
+    config: "/static/alt-config-5.js",
+    flag: (
+      <svg viewBox="0 0 900 600" className="w-4 h-4 rounded-[2px]">
+        <rect width="900" height="600" fill="#fff" />
+        <rect width="225" height="600" fill="#d80621" />
+        <rect x="675" width="225" height="600" fill="#d80621" />
+        {/* Fleur-de-lis simplified */}
+        <g fill="#d80621" transform="translate(450,300) scale(0.55)">
+          <path d="M0-80 C-10-40-40-30-40 0 C-40 25-20 30 0 20 C20 30 40 25 40 0 C40-30 10-40 0-80Z" />
+          <rect x="-8" y="20" width="16" height="50" />
+          <path d="M-40-10 C-60-20-70 0-50 10 C-40 14-30 10-30 10Z" />
+          <path d="M40-10 C60-20 70 0 50 10 C40 14 30 10 30 10Z" />
+          <rect x="-30" y="5" width="60" height="10" rx="5" />
+        </g>
+      </svg>
+    ),
+  },
+  {
+    id: "2",
+    label: "Massachusetts",
+    sublabel: "USA",
+    wisp: "/api/alt-wisp-1/",
+    config: "/static/alt-config-1.js",
+    flag: (
+      <svg viewBox="0 0 19 10" className="w-4 h-4 rounded-[2px]">
+        <rect width="19" height="10" fill="#B22234" />
+        {[0, 2, 4, 6, 8].map((y) => (
+          <rect
+            key={y}
+            y={y}
+            width="19"
+            height="1"
+            fill={y === 0 ? "#B22234" : "#fff"}
+          />
+        ))}
+        {[1, 3, 5, 7].map((y) => (
+          <rect key={y} y={y} width="19" height="1" fill="#fff" />
+        ))}
+        <rect width="8" height="5.4" fill="#3C3B6E" />
+        {[0.9, 2.7, 4.5].map((y, i) =>
+          [
+            0.8,
+            2.4,
+            4.0,
+            5.6,
+            7.2,
+            ...(i % 2 === 0 ? [1.6, 3.2, 4.8, 6.4] : []),
+          ]
+            .slice(0, i % 2 === 0 ? 9 : 6)
+            .map((x, j) => (
+              <circle key={`${i}-${j}`} cx={x} cy={y} r="0.35" fill="#fff" />
+            ))
+        )}
+      </svg>
+    ),
+  },
+  {
+    id: "3",
+    label: "Phoenix",
+    sublabel: "USA",
+    wisp: "/api/alt-wisp-2/",
+    config: "/static/alt-config-2.js",
+    flag: (
+      <svg viewBox="0 0 19 10" className="w-4 h-4 rounded-[2px]">
+        <rect width="19" height="10" fill="#B22234" />
+        {[1, 3, 5, 7].map((y) => (
+          <rect key={y} y={y} width="19" height="1" fill="#fff" />
+        ))}
+        <rect width="8" height="5.4" fill="#3C3B6E" />
+        {[0.9, 2.7, 4.5].map((y, i) =>
+          [
+            0.8,
+            2.4,
+            4.0,
+            5.6,
+            7.2,
+            ...(i % 2 === 0 ? [1.6, 3.2, 4.8, 6.4] : []),
+          ]
+            .slice(0, i % 2 === 0 ? 9 : 6)
+            .map((x, j) => (
+              <circle key={`${i}-${j}`} cx={x} cy={y} r="0.35" fill="#fff" />
+            ))
+        )}
+      </svg>
+    ),
+  },
+  {
+    id: "4",
+    label: "Virginia",
+    sublabel: "USA",
+    wisp: "/api/alt-wisp-3/",
+    config: "/static/alt-config-3.js",
+    flag: (
+      <svg viewBox="0 0 19 10" className="w-4 h-4 rounded-[2px]">
+        <rect width="19" height="10" fill="#B22234" />
+        {[1, 3, 5, 7].map((y) => (
+          <rect key={y} y={y} width="19" height="1" fill="#fff" />
+        ))}
+        <rect width="8" height="5.4" fill="#3C3B6E" />
+        {[0.9, 2.7, 4.5].map((y, i) =>
+          [
+            0.8,
+            2.4,
+            4.0,
+            5.6,
+            7.2,
+            ...(i % 2 === 0 ? [1.6, 3.2, 4.8, 6.4] : []),
+          ]
+            .slice(0, i % 2 === 0 ? 9 : 6)
+            .map((x, j) => (
+              <circle key={`${i}-${j}`} cx={x} cy={y} r="0.35" fill="#fff" />
+            ))
+        )}
+      </svg>
+    ),
+  },
+  {
+    id: "5",
+    label: "Vienna",
+    sublabel: "Austria",
+    wisp: "/api/alt-wisp-4/",
+    config: "/static/alt-config-4.js",
+    flag: (
+      <svg viewBox="0 0 3 2" className="w-4 h-4 rounded-[2px]">
+        <rect width="3" height="2" fill="#ED2939" />
+        <rect y="0.667" width="3" height="0.667" fill="#fff" />
+      </svg>
+    ),
+  },
+];
+
+async function applyVpnRegion(regionId: string) {
+  const region = VPN_REGIONS.find((r) => r.id === regionId);
+  if (!region) return;
+
+  try {
+    localStorage.setItem("selectedVpnRegion", regionId);
+
+    const old = document.getElementById("config-script");
+    if (old) old.remove();
+    await new Promise<void>((resolve) => {
+      const s = document.createElement("script");
+      s.id = "config-script";
+      s.src = region.config;
+      s.onload = () => resolve();
+      s.onerror = () => resolve(); 
+      document.body.appendChild(s);
+    });
+
+    const cfg = (window as any)._CONFIG;
+    const wispUrl =
+      cfg?.wispurl ??
+      (location.protocol === "https:" ? "wss" : "ws") +
+        "://" +
+        location.host +
+        region.wisp;
+
+    if (window.BareMux) {
+      const conn = new window.BareMux.BareMuxConnection("/baremux/worker.js");
+      await conn
+        .setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }])
+        .catch(() => {});
+    }
+
+    window.dispatchEvent(
+      new StorageEvent("storage", {
+        key: "selectedVpnRegion",
+        newValue: regionId,
+      })
+    );
+  } catch (e) {
+    console.error("[vpn] region switch failed", e);
+  }
+}
+
+function VpnSelector() {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<string>(
+    () => localStorage.getItem("selectedVpnRegion") ?? "default"
+  );
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const current = VPN_REGIONS.find(r => r.id === selected) ?? VPN_REGIONS[0];
+
+  const handleSelect = async (id: string) => {
+    setSelected(id);
+    setOpen(false);
+    await applyVpnRegion(id);
+  };
+
+  return (
+    <div ref={ref} className="relative mt-2">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full glass-subtle border border-border text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ShieldCheck size={11} className="flex-shrink-0" />
+        <span className="flex items-center gap-1.5">
+          {current.flag}
+          {current.label}
+        </span>
+        <span className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}>▾</span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-44 rounded-2xl glass-heavy border border-border shadow-2xl p-2 flex flex-col gap-1"
+          >
+            <p className="text-[9px] uppercase tracking-widest text-muted-foreground px-2 pb-1">VPN Region</p>
+            {VPN_REGIONS.map(region => (
+              <button
+                key={region.id}
+                onClick={() => handleSelect(region.id)}
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-left transition-colors w-full
+                  ${selected === region.id
+                    ? "bg-primary/10 text-foreground border border-primary/20"
+                    : "hover:bg-accent text-muted-foreground hover:text-foreground"
+                  }`}
+              >
+                <span className="flex-shrink-0">{region.flag}</span>
+                <span className="flex flex-col">
+                  <span className="text-[11px] font-medium leading-tight">{region.label}</span>
+                  <span className="text-[9px] opacity-60 leading-tight">{region.sublabel}</span>
+                </span>
+                {selected === region.id && (
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
+                )}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 function getStoredPresets(): Preset[] {
   try {
@@ -41,6 +387,12 @@ function getStoredPresets(): Preset[] {
     if (stored) return JSON.parse(stored);
   } catch {}
   return DEFAULT_PRESETS;
+}
+
+function savePresetsToStorage(presets: Preset[]) {
+  try {
+    localStorage.setItem("petezah-presets", JSON.stringify(presets));
+  } catch {}
 }
 
 function FluidCanvas({ enabled }: { enabled: boolean }) {
@@ -55,9 +407,14 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
     if (!ctx) return;
 
     const resize = () => {
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      const dpr = window.devicePixelRatio || 1;
+      const parent = canvas.parentElement;
+      const w = parent ? parent.clientWidth : canvas.offsetWidth;
+      const h = parent ? parent.clientHeight : canvas.offsetHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -101,9 +458,22 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
         if (b.y > h + b.radius) b.y = -b.radius;
 
         const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.radius);
-        grad.addColorStop(0, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 2.2})`);
-        grad.addColorStop(0.4, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${b.opacity * 1.1})`);
-        grad.addColorStop(1, `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, 0)`);
+        grad.addColorStop(
+          0,
+          `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${
+            b.opacity * 2.2
+          })`
+        );
+        grad.addColorStop(
+          0.4,
+          `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${
+            b.opacity * 1.1
+          })`
+        );
+        grad.addColorStop(
+          1,
+          `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, 0)`
+        );
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
       });
@@ -126,7 +496,7 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
       const rect = canvas.getBoundingClientRect();
       mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     };
-    canvas.addEventListener("mousemove", handleMouse);
+    if (enabled) canvas.addEventListener("mousemove", handleMouse);
 
     return () => {
       window.removeEventListener("resize", resize);
@@ -136,15 +506,28 @@ function FluidCanvas({ enabled }: { enabled: boolean }) {
   }, [enabled]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ pointerEvents: enabled ? "auto" : "none" }}
-    />
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: enabled ? "auto" : "none",
+          display: "block",
+        }}
+      />
+    </div>
   );
 }
 
-function SearchBar() {
+function NewTabSearchBar({
+  onNavigate,
+}: {
+  onNavigate: (url: string) => void;
+}) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -160,7 +543,20 @@ function SearchBar() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
+  const handleSubmit = () => {
+    if (!query.trim()) return;
+    let url = query.trim();
+    if (url.startsWith("http") || url.includes(".")) {
+      if (!url.startsWith("http")) url = "https://" + url;
+    } else {
+      url = "https://duckduckgo.com/?q=" + encodeURIComponent(url);
+    }
+    onNavigate(url);
+    setQuery("");
+  };
+
+  const isMac =
+    typeof navigator !== "undefined" && /Mac/i.test(navigator.userAgent);
 
   return (
     <div className="w-full max-w-lg">
@@ -170,7 +566,10 @@ function SearchBar() {
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search anything..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSubmit();
+          }}
+          placeholder="Search or enter URL..."
           className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
           spellCheck={false}
         />
@@ -182,7 +581,12 @@ function SearchBar() {
   );
 }
 
-function PresetEditModal({ preset, onSave, onDelete, onClose }: {
+function PresetEditModal({
+  preset,
+  onSave,
+  onDelete,
+  onClose,
+}: {
   preset: Preset | null;
   onSave: (p: Preset) => void;
   onDelete?: () => void;
@@ -218,7 +622,10 @@ function PresetEditModal({ preset, onSave, onDelete, onClose }: {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-[90] flex items-center justify-center p-4"
     >
-      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -226,30 +633,72 @@ function PresetEditModal({ preset, onSave, onDelete, onClose }: {
         className="relative z-10 w-full max-w-xs bg-card border border-border rounded-2xl p-5 shadow-2xl"
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-foreground">{preset ? "Edit Preset" : "Add Preset"}</h3>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-accent text-muted-foreground"><X size={14} /></button>
+          <h3 className="text-sm font-semibold text-foreground">
+            {preset ? "Edit Preset" : "Add Preset"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-lg hover:bg-accent text-muted-foreground"
+          >
+            <X size={14} />
+          </button>
         </div>
         <div className="space-y-3">
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Title</label>
-            <input value={label} onChange={(e) => setLabel(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/30" />
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Title
+            </label>
+            <input
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/30"
+            />
           </div>
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">URL</label>
-            <input value={url} onChange={(e) => setUrl(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/30" />
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              URL
+            </label>
+            <input
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-foreground outline-none focus:ring-1 focus:ring-primary/30"
+            />
           </div>
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Icon</label>
-            <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
-            <button onClick={() => fileRef.current?.click()} className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors">
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              Icon
+            </label>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFile}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="w-full mt-1 px-3 py-2 rounded-xl bg-accent border border-border text-sm text-muted-foreground hover:text-foreground flex items-center gap-2 transition-colors"
+            >
               <Upload size={12} />
-              <span>{iconData?.startsWith("data:") ? "Image selected" : "Upload image"}</span>
+              <span>
+                {iconData?.startsWith("data:")
+                  ? "Image selected"
+                  : "Upload image"}
+              </span>
             </button>
           </div>
           <div className="flex gap-2 pt-1">
-            <button onClick={handleSave} className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors">Save</button>
+            <button
+              onClick={handleSave}
+              className="flex-1 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Save
+            </button>
             {onDelete && (
-              <button onClick={onDelete} className="px-3 py-2 rounded-xl bg-destructive/10 text-destructive text-sm hover:bg-destructive/20 transition-colors">
+              <button
+                onClick={onDelete}
+                className="px-3 py-2 rounded-xl bg-destructive/10 text-destructive text-sm hover:bg-destructive/20 transition-colors"
+              >
                 <Trash2 size={14} />
               </button>
             )}
@@ -260,7 +709,15 @@ function PresetEditModal({ preset, onSave, onDelete, onClose }: {
   );
 }
 
-function PresetCard({ preset, onClick, onEdit }: { preset: Preset; onClick: () => void; onEdit: () => void }) {
+function PresetCard({
+  preset,
+  onClick,
+  onEdit,
+}: {
+  preset: Preset;
+  onClick: () => void;
+  onEdit: () => void;
+}) {
   const IconComp = ICON_MAP[preset.icon];
   const isCustomImage = preset.icon?.startsWith("data:");
 
@@ -272,79 +729,62 @@ function PresetCard({ preset, onClick, onEdit }: { preset: Preset; onClick: () =
       onClick={onClick}
     >
       <button
-        onClick={(e) => { e.stopPropagation(); onEdit(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit();
+        }}
         className="absolute top-1.5 right-1.5 p-1 rounded-md bg-accent/80 border border-border opacity-0 group-hover:opacity-100 transition-opacity z-10 hover:bg-accent"
       >
         <Pencil size={9} className="text-foreground/60" />
       </button>
       <div className="w-8 h-8 rounded-xl bg-accent/60 border border-border flex items-center justify-center overflow-hidden">
         {isCustomImage ? (
-          <img src={preset.icon} alt={preset.label} className="w-5 h-5 object-cover rounded" />
+          <img
+            src={preset.icon}
+            alt={preset.label}
+            className="w-5 h-5 object-cover rounded"
+          />
         ) : IconComp ? (
           <IconComp size={14} className="text-foreground/40" />
         ) : (
-          <span className="text-[10px] text-foreground/40">{preset.label[0]}</span>
+          <span className="text-[10px] text-foreground/40">
+            {preset.label[0]}
+          </span>
         )}
       </div>
-      <p className="text-[11px] font-medium text-foreground/80">{preset.label}</p>
+      <p className="text-[11px] font-medium text-foreground/80">
+        {preset.label}
+      </p>
     </motion.div>
   );
 }
 
-function FeaturePage({ page, onBack }: { page: string; onBack: () => void }) {
-  const preset = DEFAULT_PRESETS.find((c) => c.id === page);
-  const IconComp = ICON_MAP[preset?.icon || "bot"] || Bot;
-
-  return (
-    <div className="flex-1 flex flex-col relative overflow-hidden">
-      <FluidCanvas enabled={false} />
-      <div className="p-6 relative z-10">
-        <button onClick={onBack} className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-          <ArrowUpRight size={10} className="rotate-[225deg]" /> Back to Home
-        </button>
-      </div>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex-1 flex flex-col items-center justify-center gap-6 px-6 relative z-10"
-      >
-        <div className="w-16 h-16 rounded-2xl bg-accent border border-border flex items-center justify-center">
-          <IconComp size={28} className="text-foreground/50" />
-        </div>
-        <h1 className="text-2xl font-semibold text-foreground">{preset?.label}</h1>
-        <p className="text-muted-foreground text-sm max-w-md text-center">Connect your backend to bring this to life.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg w-full mt-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="glass rounded-2xl p-4 flex flex-col gap-2">
-              <div className="w-full h-16 rounded-xl bg-foreground/5 animate-pulse" />
-              <div className="w-3/4 h-2 rounded bg-foreground/10" />
-              <div className="w-1/2 h-2 rounded bg-foreground/5" />
-            </div>
-          ))}
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (page: string) => void }) {
-  const [activePage, setActivePage] = useState<string | null>(null);
-  const [fluidCursor, setFluidCursor] = useState(true);
+function NewTabPage({ onNavigate }: { onNavigate: (url: string) => void }) {
+  const fluidCursor = true;
   const [presets, setPresets] = useState<Preset[]>(getStoredPresets);
-  const [editingPreset, setEditingPreset] = useState<Preset | null | "new">(null);
+  const [editingPreset, setEditingPreset] = useState<Preset | null | "new">(
+    null
+  );
 
   const savePresets = useCallback((updated: Preset[]) => {
     setPresets(updated);
-    localStorage.setItem("petezah-presets", JSON.stringify(updated));
+    savePresetsToStorage(updated);
   }, []);
 
-  if (activePage) {
-    return <FeaturePage page={activePage} onBack={() => setActivePage(null)} />;
-  }
-
   return (
-    <div className="flex-1 flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden">
+      {" "}
       <FluidCanvas enabled={fluidCursor} />
+      {/* Discord button — top right */}
+      <a
+        href="https://discord.gg/cYjHFDguxS"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute top-3 right-3 z-9 flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-accent/60 backdrop-blur-sm text-[11px] font-medium text-foreground/60 hover:text-foreground hover:bg-accent transition-all"
+      >
+        <MessageCircle size={11} />
+        <span>Discord</span>
+      </a>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -352,18 +792,22 @@ function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (p
         className="relative z-10 flex flex-col items-center gap-5 max-w-2xl w-full px-6 text-center"
       >
         <div className="flex flex-col items-center gap-1.5">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">PeteZah</h1>
-          <p className="text-[11px] text-muted-foreground">Your all-in-one hub</p>
+          <h1 className="text-3xl font-bold text-foreground tracking-tight">
+            PeteZah
+          </h1>
+          <p className="text-[11px] text-muted-foreground">
+            Your all-in-one hub
+          </p>
         </div>
 
-        <SearchBar />
+        <NewTabSearchBar onNavigate={onNavigate} />
 
         <div className="flex items-center justify-center gap-1.5 w-full max-w-2xl overflow-x-auto overflow-y-visible py-2">
           {presets.map((preset) => (
             <PresetCard
               key={preset.id}
               preset={preset}
-              onClick={() => setActivePage(preset.id)}
+              onClick={() => onNavigate(preset.url)}
               onEdit={() => setEditingPreset(preset)}
             />
           ))}
@@ -380,15 +824,8 @@ function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (p
           </motion.button>
         </div>
 
-        <button
-          onClick={() => setFluidCursor(!fluidCursor)}
-          className="mt-2 text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-subtle border border-border"
-        >
-          <span className={`w-1.5 h-1.5 rounded-full ${fluidCursor ? "bg-primary" : "bg-muted-foreground/30"}`} />
-          Fluid cursor {fluidCursor ? "on" : "off"}
-        </button>
+        <VpnSelector />
       </motion.div>
-
       <AnimatePresence>
         {editingPreset && (
           <PresetEditModal
@@ -401,14 +838,303 @@ function TabContent({ tab, onNavigateToPage }: { tab: Tab; onNavigateToPage?: (p
               }
               setEditingPreset(null);
             }}
-            onDelete={editingPreset !== "new" ? () => {
-              savePresets(presets.filter((x) => x.id !== (editingPreset as Preset).id));
-              setEditingPreset(null);
-            } : undefined}
+            onDelete={
+              editingPreset !== "new"
+                ? () => {
+                    savePresets(
+                      presets.filter(
+                        (x) => x.id !== (editingPreset as Preset).id
+                      )
+                    );
+                    setEditingPreset(null);
+                  }
+                : undefined
+            }
             onClose={() => setEditingPreset(null)}
           />
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// Adopts the scramjet iframe into a React container div.
+// The iframe is NEVER recreated — we just toggle display.
+function ScramjetFrame({ tab, isVisible }: { tab: Tab; isVisible: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastUrlRef = useRef<string>("");
+
+  useEffect(() => {
+    if (!tab.frame?.frame) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const frame = tab.frame.frame as HTMLIFrameElement;
+    if (frame.parentElement !== container) {
+      container.appendChild(frame);
+    }
+    frame.style.cssText =
+      "position:absolute;inset:0;width:100%;height:100%;border:none;";
+  }, [tab.frame]);
+
+  useEffect(() => {
+    if (!tab.frame?.frame) return;
+    (tab.frame.frame as HTMLIFrameElement).style.display = isVisible
+      ? "block"
+      : "none";
+  }, [isVisible, tab.frame]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const scFrame = tab.frame;
+    if (!scFrame) return;
+
+    return () => {};
+  }, [isVisible, tab.frame, tab.id]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute inset-0 w-full h-full"
+      style={{ display: isVisible ? "block" : "none" }}
+    />
+  );
+}
+
+// Attempt to decode scramjet-proxied URL back to real URL
+function decodeScramjetUrl(src: string): string | null {
+  try {
+    // Scramjet typically encodes URLs — try to extract from path
+    const url = new URL(src);
+    const path = url.pathname;
+    // Common scramjet pattern: /scram/...encoded...
+    const match = path.match(/\/scram\/(.+)/);
+    if (match) {
+      try {
+        return atob(decodeURIComponent(match[1]));
+      } catch {}
+      try {
+        return decodeURIComponent(match[1]);
+      } catch {}
+    }
+    if (src.startsWith("http") && !src.includes(window.location.hostname))
+      return src;
+  } catch {}
+  return null;
+}
+
+function TabPane({
+  tab,
+  isVisible,
+  onNavigate,
+}: {
+  tab: Tab;
+  isVisible: boolean;
+  onNavigate: (url: string) => void;
+}) {
+  const isNewTab =
+    !tab.url ||
+    tab.url === "petezah://newtab" ||
+    tab.url === "about:blank" ||
+    tab.url === "https://";
+
+  const isGames = tab.url === "petezah://games";
+  const isAI = tab.url === "petezah://ai";
+  const isApps = tab.url === "petezah://apps";
+  const isMusic = tab.url === "petezah://music";
+  const isChat = tab.url === "petezah://chat";
+  const isMovies = tab.url === "petezah://movies";
+  const isGameViewer = tab.url.startsWith("petezah://gameviewer");
+  const displayUrl = isGameViewer ? "petezah://gameviewer" : tab.url;
+  const isAppViewer = tab.url.startsWith("petezah://appviewer");
+
+  if (isGameViewer) {
+    const params = new URLSearchParams(tab.url.split("?")[1] || "");
+    const gameUrl = params.get("url") || "";
+    const gameTitle = params.get("title") || "";
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <GameViewerPage
+          url={gameUrl}
+          title={gameTitle}
+          onBack={() => onNavigate("petezah://games")}
+        />
+      </div>
+    );
+  }
+  if (isNewTab) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <NewTabPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (isGames) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <GamesPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (isAI) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <AIPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (isApps) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <AppsPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (isMusic) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <MusicPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (isChat) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <ChatPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (isMovies) {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <MoviesPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (tab.url === "petezah://changelog") {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <ChangelogPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (tab.url === "petezah://feedback") {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <FeedbackPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (tab.url === "petezah://account") {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <AccountPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (tab.url === "petezah://history") {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <HistoryPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+  if (tab.url === "petezah://extensions") {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <ExtensionsPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+  if (tab.url === "petezah://bookmarks") {
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <BookmarksPage onNavigate={onNavigate} />
+      </div>
+    );
+  }
+
+  if (isAppViewer) {
+    const params = new URLSearchParams(tab.url.split("?")[1] || "");
+    const appUrl = params.get("url") || "";
+    const appTitle = params.get("title") || "";
+    return (
+      <div
+        className="absolute inset-0"
+        style={{ display: isVisible ? "block" : "none" }}
+      >
+        <AppViewerPage
+          url={appUrl}
+          title={appTitle}
+          onBack={() => onNavigate("petezah://apps")}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="absolute inset-0 w-full h-full"
+      style={{ display: isVisible ? "block" : "none" }}
+    >
+      {tab.frame ? (
+        <ScramjetFrame tab={tab} isVisible={isVisible} />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -433,29 +1159,61 @@ function EmptyState() {
           </div>
         </motion.div>
         <div className="text-center">
-          <h2 className="text-base font-medium text-foreground">Nothing to see</h2>
-          <p className="text-xs text-muted-foreground mt-1">Open a tab to begin</p>
+          <h2 className="text-base font-medium text-foreground">
+            Nothing to see
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Open a tab to begin
+          </p>
         </div>
       </motion.div>
     </div>
   );
 }
 
-export default function ContentArea({ activeTab, splitTab, onNavigateToPage }: ContentAreaProps) {
+export default function ContentArea({
+  tabs,
+  activeTab,
+  splitTab,
+  onNavigate,
+  onNewTab,
+  onCloseSplit,
+}: ContentAreaProps) {
+  if (!activeTab && tabs.length === 0) return <EmptyState />;
+
+  const mainTabs = tabs.filter((t) => !splitTab || t.id !== splitTab.id);
+
   return (
-    <div className="flex-1 flex overflow-hidden">
-      {activeTab ? (
+    <div className="flex-1 flex relative w-full" style={{ overflow: "clip" }}>
+      <div className="flex-1 relative">
+        {mainTabs.length === 0 ? (
+          <EmptyState />
+        ) : (
+          mainTabs.map((tab) => (
+            <TabPane
+              key={tab.id}
+              tab={tab}
+              isVisible={activeTab?.id === tab.id}
+              onNavigate={onNavigate}
+            />
+          ))
+        )}
+      </div>
+
+      {splitTab && (
         <>
-          <TabContent tab={activeTab} onNavigateToPage={onNavigateToPage} />
-          {splitTab && (
-            <>
-              <div className="w-px bg-border" />
-              <TabContent tab={splitTab} onNavigateToPage={onNavigateToPage} />
-            </>
-          )}
+          <div className="w-px bg-border flex-shrink-0" />
+          <div className="flex-1 relative min-w-0">
+            <TabPane tab={splitTab} isVisible onNavigate={onNavigate} />
+            <button
+              onClick={onCloseSplit}
+              className="absolute top-2 right-2 z-50 p-1.5 rounded-lg glass-heavy border border-border text-foreground/50 hover:text-foreground transition-colors"
+              title="Close split view"
+            >
+              <X size={11} />
+            </button>
+          </div>
         </>
-      ) : (
-        <EmptyState />
       )}
     </div>
   );

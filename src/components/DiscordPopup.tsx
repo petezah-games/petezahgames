@@ -28,56 +28,54 @@ export default function DiscordPopup() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[999] flex items-center justify-center p-6"
         >
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/80 backdrop-blur-md"
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
             onClick={dismiss}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.95, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.97, y: 5 }}
+            exit={{ opacity: 0, scale: 0.97, y: 6 }}
             transition={{ type: "spring", duration: 0.4, bounce: 0.15 }}
-            className="relative z-10 w-full max-w-sm bg-card border border-border rounded-2xl p-7 text-center shadow-2xl"
+            className="relative z-10 w-full max-w-xl bg-card border border-border rounded-2xl shadow-2xl flex flex-col"
           >
-            <button
-              onClick={dismiss}
-              className="absolute top-3.5 right-3.5 p-1.5 rounded-lg hover:bg-accent text-foreground/40 hover:text-foreground transition-colors"
-            >
-              <X size={14} />
-            </button>
-
-            <div className="w-12 h-12 rounded-xl bg-[hsl(235,86%,65%)] flex items-center justify-center mx-auto mb-4">
-              <MessageCircle size={22} className="text-white" />
-            </div>
-
-            <h2 className="text-base font-semibold text-foreground mb-1.5">
-              Join our Discord
-            </h2>
-            <p className="text-sm text-foreground/50 mb-5 leading-relaxed">
-              Connect with the PeteZah community. Get updates, share feedback, and hang out.
-            </p>
-
-            <div className="flex flex-col gap-2">
-              <a
-                href="https://discord.gg/petezah"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={dismiss}
-                className="w-full py-2.5 rounded-xl bg-[hsl(235,86%,65%)] hover:bg-[hsl(235,86%,60%)] text-white font-medium text-sm transition-colors"
-              >
-                Open Discord
-              </a>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <MessageCircle size={13} className="text-[hsl(235,86%,65%)]" />
+                <h2 className="text-sm font-semibold text-foreground">Join our Discord</h2>
+              </div>
               <button
                 onClick={dismiss}
-                className="w-full py-2 rounded-xl text-sm text-foreground/40 hover:text-foreground hover:bg-accent transition-colors"
+                className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               >
-                Maybe later
+                <X size={13} />
               </button>
+            </div>
+
+            <div className="px-5 py-6 flex flex-col gap-4">
+              <p className="text-[11px] text-foreground/70 leading-relaxed font-sans">
+                Connect with the PeteZah community. Get updates, share feedback, report issues, and hang out with other users.
+              </p>
+
+              <div className="flex flex-col gap-2">
+                <a
+                  href={"https://discord.com/invite/arcgZTV9zX"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={dismiss}
+                  className="w-full py-2.5 rounded-xl bg-[hsl(235,86%,65%)] hover:bg-[hsl(235,86%,60%)] text-white font-medium text-sm text-center transition-colors"
+                >
+                  Open Discord
+                </a>
+                <button
+                  onClick={dismiss}
+                  className="w-full py-2 rounded-xl text-[11px] text-foreground/40 hover:text-foreground hover:bg-accent transition-colors"
+                >
+                  Maybe later
+                </button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
