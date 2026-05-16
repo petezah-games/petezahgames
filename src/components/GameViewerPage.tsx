@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { ZoomIn, ZoomOut, Maximize, Minimize, ExternalLink, Eye, EyeOff, GripHorizontal } from "lucide-react";
+import {
+  ZoomIn,
+  ZoomOut,
+  Maximize,
+  Minimize,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  GripHorizontal,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface GameViewerPageProps {
@@ -44,7 +53,11 @@ function ControlBtn({
   );
 }
 
-export default function GameViewerPage({ url, title, onBack }: GameViewerPageProps) {
+export default function GameViewerPage({
+  url,
+  title,
+  onBack,
+}: GameViewerPageProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -84,16 +97,31 @@ export default function GameViewerPage({ url, title, onBack }: GameViewerPagePro
     }
   };
 
-  const openExternal = () => window.open(url, "_blank");
+  const openExternal = () => {
+    if (url.includes("/storage/ag/originals/precision/index.html")) {
+      window.open(
+        "/storage/ag/originals/Resent-Client-main/index.html",
+        "_blank",
+      );
+    } else {
+      window.open(url, "_blank");
+    }
+  };
 
   return (
     <div className="absolute inset-0">
-      <div ref={containerRef} className="relative w-full h-full overflow-hidden">
+      <div
+        ref={containerRef}
+        className="relative w-full h-full overflow-hidden"
+      >
         <div
           ref={wrapperRef}
           style={{
-            position: "absolute", top: 0, left: 0,
-            width: "100%", height: "100%",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
             transformOrigin: "0 0",
             transition: "transform 0.2s ease",
           }}
@@ -102,7 +130,12 @@ export default function GameViewerPage({ url, title, onBack }: GameViewerPagePro
             ref={iframeRef}
             src={url}
             sandbox="allow-scripts allow-pointer-lock allow-forms allow-same-origin allow-downloads"
-            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+              display: "block",
+            }}
             title={title || "Game"}
           />
         </div>
@@ -139,13 +172,21 @@ export default function GameViewerPage({ url, title, onBack }: GameViewerPagePro
                   background: "rgba(6, 12, 26, 0.88)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   backdropFilter: "blur(20px)",
-                  boxShadow: "0 4px 32px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(255,255,255,0.04) inset",
+                  boxShadow:
+                    "0 4px 32px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(255,255,255,0.04) inset",
                   userSelect: "none",
                   pointerEvents: "auto",
                   cursor: "grab",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", paddingRight: 4, color: "rgba(255,255,255,0.18)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    paddingRight: 4,
+                    color: "rgba(255,255,255,0.18)",
+                  }}
+                >
                   <GripHorizontal size={12} />
                 </div>
 
@@ -165,44 +206,89 @@ export default function GameViewerPage({ url, title, onBack }: GameViewerPagePro
                         transition: "color 0.15s",
                         whiteSpace: "nowrap",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.85)"}
-                      onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.4)"}
+                      onMouseEnter={(e) =>
+                        ((e.currentTarget as HTMLButtonElement).style.color =
+                          "rgba(255,255,255,0.85)")
+                      }
+                      onMouseLeave={(e) =>
+                        ((e.currentTarget as HTMLButtonElement).style.color =
+                          "rgba(255,255,255,0.4)")
+                      }
                     >
                       ← Back
                     </button>
-                    <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.07)", flexShrink: 0 }} />
+                    <div
+                      style={{
+                        width: 1,
+                        height: 14,
+                        background: "rgba(255,255,255,0.07)",
+                        flexShrink: 0,
+                      }}
+                    />
                   </>
                 )}
 
-                <ControlBtn onClick={() => applyZoom(zoom - 0.25)} title="Zoom out">
+                <ControlBtn
+                  onClick={() => applyZoom(zoom - 0.25)}
+                  title="Zoom out"
+                >
                   <ZoomOut size={12} />
                 </ControlBtn>
-                <span style={{
-                  fontSize: 10,
-                  color: "rgba(255,255,255,0.3)",
-                  fontVariantNumeric: "tabular-nums",
-                  minWidth: 28,
-                  textAlign: "center",
-                  flexShrink: 0,
-                }}>
+                <span
+                  style={{
+                    fontSize: 10,
+                    color: "rgba(255,255,255,0.3)",
+                    fontVariantNumeric: "tabular-nums",
+                    minWidth: 28,
+                    textAlign: "center",
+                    flexShrink: 0,
+                  }}
+                >
                   {Math.round(zoom * 100)}%
                 </span>
-                <ControlBtn onClick={() => applyZoom(zoom + 0.25)} title="Zoom in">
+                <ControlBtn
+                  onClick={() => applyZoom(zoom + 0.25)}
+                  title="Zoom in"
+                >
                   <ZoomIn size={12} />
                 </ControlBtn>
 
-                <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.07)", flexShrink: 0 }} />
+                <div
+                  style={{
+                    width: 1,
+                    height: 14,
+                    background: "rgba(255,255,255,0.07)",
+                    flexShrink: 0,
+                  }}
+                />
 
                 <ControlBtn onClick={openExternal} title="Open in new tab">
                   <ExternalLink size={12} />
                 </ControlBtn>
-                <ControlBtn onClick={handleFullscreen} title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-                  {isFullscreen ? <Minimize size={12} /> : <Maximize size={12} />}
+                <ControlBtn
+                  onClick={handleFullscreen}
+                  title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                >
+                  {isFullscreen ? (
+                    <Minimize size={12} />
+                  ) : (
+                    <Maximize size={12} />
+                  )}
                 </ControlBtn>
 
-                <div style={{ width: 1, height: 14, background: "rgba(255,255,255,0.07)", flexShrink: 0 }} />
+                <div
+                  style={{
+                    width: 1,
+                    height: 14,
+                    background: "rgba(255,255,255,0.07)",
+                    flexShrink: 0,
+                  }}
+                />
 
-                <ControlBtn onClick={() => setControlsVisible(false)} title="Hide controls">
+                <ControlBtn
+                  onClick={() => setControlsVisible(false)}
+                  title="Hide controls"
+                >
                   <EyeOff size={12} />
                 </ControlBtn>
               </motion.div>
