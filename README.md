@@ -18,7 +18,7 @@ You're mainly supposed to use our site at places that have restrictions.
 
 ## Our Stats
 
-Our website is host to over 300k users!
+Our website is host to over 6 million users!
 
 Links- You can visit [https://petezahgames.com](https://petezahgames.com), and
 you can get more links in our [Discord Server](https://discord.gg/unrestricted)
