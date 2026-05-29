@@ -6,6 +6,12 @@ import {
   Megaphone, MessageSquare, Palette, Shield, Sliders, Camera,
   UserCog, Users, Ban, UserMinus, ShieldCheck, ShieldOff, Plus, ExternalLink, Image, Pipette,
 } from "lucide-react";
+import {
+  reconcileSettings,
+  pushSettings,
+  pullSettings,
+  schedulePushSettings,
+} from "@/lib/settingsSync";
 
 interface AuthUser {
   id: string; email: string; username?: string; bio?: string;
@@ -409,6 +415,8 @@ export default function AccountPage({ onNavigate }: { onNavigate: (url: string) 
 
   const [s, setS] = useState<Record<string, string>>({});
   const [settingsSaved, setSettingsSaved] = useState(false);
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncNote, setSyncNote] = useState("");
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
   const [adminLoading, setAdminLoading] = useState(false);
@@ -438,12 +446,23 @@ export default function AccountPage({ onNavigate }: { onNavigate: (url: string) 
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
+  const loadLocalSettings = useCallback(() => {
     const keys = ["theme","siteTitle","siteLogo","panicKey","panicUrl","beforeUnload","disableRightClick","disableParticles","autocloak","backgroundColor","backgroundImage"];
     const loaded: Record<string,string> = {};
     keys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) loaded[k] = v; });
     setS(loaded);
   }, []);
+
+  useEffect(() => {
+    loadLocalSettings();
+  }, [loadLocalSettings]);
+
+  useEffect(() => {
+    if (!user) return;
+    const onUpdated = () => loadLocalSettings();
+    window.addEventListener("petezah-settings-updated", onUpdated);
+    return () => window.removeEventListener("petezah-settings-updated", onUpdated);
+  }, [user, loadLocalSettings]);
 
   const loadAdminUsers = useCallback((p: number, search?: string) => {
     setAdminLoading(true);
@@ -521,6 +540,11 @@ export default function AccountPage({ onNavigate }: { onNavigate: (url: string) 
         setUsername(d.user.username || "");
         setBio(d.user.bio || "");
         setIsOwner(!!d.user.is_owner);
+        const result = await reconcileSettings();
+        loadLocalSettings();
+        if (result === "pulled") setSyncNote("Synced from your account");
+        else if (result === "pushed") setSyncNote("Local settings uploaded");
+        setTimeout(() => setSyncNote(""), 3000);
       }
     } catch { setAuthErr("Network error. Please try again."); }
     finally { setAuthLoading(false); }
@@ -557,10 +581,39 @@ export default function AccountPage({ onNavigate }: { onNavigate: (url: string) 
   const setVal = (k: string, v: string) => setS(prev => ({ ...prev, [k]: v }));
   const toggle = (k: string) => setS(prev => ({ ...prev, [k]: prev[k] === "true" ? "false" : "true" }));
 
-  function applySettings() {
+  async function applySettings() {
     applySettingsNow(s);
     setSettingsSaved(true);
+    if (user) {
+      const ok = await pushSettings();
+      setSyncNote(ok ? "Saved to account" : "Saved locally only");
+      setTimeout(() => setSyncNote(""), 2500);
+    }
     setTimeout(() => setSettingsSaved(false), 1500);
+  }
+
+  async function runManualSync(direction: "pull" | "push") {
+    setSyncBusy(true);
+    setSyncNote("");
+    try {
+      if (direction === "pull") {
+        const ok = await pullSettings();
+        loadLocalSettings();
+        const loaded: Record<string, string> = {};
+        ["theme","siteTitle","siteLogo","panicKey","panicUrl","beforeUnload","disableRightClick","disableParticles","autocloak","backgroundColor","backgroundImage"].forEach(k => {
+          const v = localStorage.getItem(k);
+          if (v !== null) loaded[k] = v;
+        });
+        applySettingsNow(loaded);
+        setSyncNote(ok ? "Downloaded from account" : "Could not download");
+      } else {
+        const ok = await pushSettings();
+        setSyncNote(ok ? "Uploaded to account" : "Could not upload");
+      }
+    } finally {
+      setSyncBusy(false);
+      setTimeout(() => setSyncNote(""), 3000);
+    }
   }
 
   function exportData() {
@@ -581,6 +634,7 @@ export default function AccountPage({ onNavigate }: { onNavigate: (url: string) 
           const loaded: Record<string,string> = {};
           keys.forEach(k => { const v = localStorage.getItem(k); if (v !== null) loaded[k] = v; });
           setS(loaded); applySettingsNow(loaded);
+          if (user) schedulePushSettings(800);
         }
       } catch {}
     };
@@ -1042,6 +1096,31 @@ export default function AccountPage({ onNavigate }: { onNavigate: (url: string) 
               <div style={{ maxWidth: "400px" }}>
                 <h2 style={{ fontSize: "15px", fontWeight: 700, color: C.text, margin: "0 0 3px" }}>Data</h2>
                 <p style={{ fontSize: "11px", color: C.textSub, margin: "0 0 20px" }}>Import, export, or reset your local data</p>
+
+                <p style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: C.textMuted, margin: "0 0 8px" }}>Account sync</p>
+                <p style={{ fontSize: "11px", color: C.textSub, margin: "0 0 10px" }}>
+                  Themes, games, bookmarks, and other prefs sync when you are signed in.
+                </p>
+                <div style={{ display: "flex", gap: "6px", marginBottom: syncNote ? "8px" : "16px", flexWrap: "wrap" }}>
+                  <button disabled={syncBusy} onClick={() => runManualSync("pull")} style={{
+                    flex: 1, minWidth: "120px", padding: "9px 12px", borderRadius: "8px",
+                    background: C.surface, border: `1px solid ${C.border}`, color: C.text,
+                    fontSize: "11px", fontWeight: 600, cursor: syncBusy ? "wait" : "pointer", opacity: syncBusy ? 0.6 : 1,
+                  }}>
+                    {syncBusy ? "Working…" : "Download"}
+                  </button>
+                  <button disabled={syncBusy} onClick={() => runManualSync("push")} style={{
+                    flex: 1, minWidth: "120px", padding: "9px 12px", borderRadius: "8px",
+                    background: C.accentDim, border: `1px solid ${C.borderFocus}`, color: C.accent,
+                    fontSize: "11px", fontWeight: 600, cursor: syncBusy ? "wait" : "pointer", opacity: syncBusy ? 0.6 : 1,
+                  }}>
+                    Upload
+                  </button>
+                </div>
+                {syncNote && (
+                  <p style={{ fontSize: "11px", color: C.success, margin: "0 0 14px" }}>{syncNote}</p>
+                )}
+
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                   {[
                     { label: "Export Data", desc: "Download settings as JSON", icon: Download, onClick: exportData },

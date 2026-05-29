@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useBrowserState } from "@/hooks/useBrowserState";
 import { useAuth } from "@/hooks/useAuth";
+import { schedulePushSettings } from "@/lib/settingsSync";
 import Sidebar from "@/components/BrowserSidebar";
 import Toolbar from "@/components/BrowserToolbar";
 import ContentArea from "@/components/ContentArea";
@@ -17,6 +18,17 @@ export default function ArcBrowser() {
   const [zoomLevel, setZoomLevel] = useState(100);
 
   useEffect(() => {
+    if (!user) return;
+    const onSync = () => schedulePushSettings();
+    window.addEventListener('petezah-settings-updated', onSync);
+    window.addEventListener('petezah-sync-request', onSync);
+    return () => {
+      window.removeEventListener('petezah-settings-updated', onSync);
+      window.removeEventListener('petezah-sync-request', onSync);
+    };
+  }, [user]);
+
+  useEffect(() => {
     const handler = (e: Event) => {
       const { tabId, url } = (e as CustomEvent).detail;
       state.updateTabUrl(tabId, url);
@@ -26,6 +38,7 @@ export default function ArcBrowser() {
         const newEntry = { id: String(Date.now()) + Math.random(), url, title: url, favicon, visitedAt: Date.now(), isProxied: true };
         const filtered = entries.filter((entry: any) => entry.url !== url);
         localStorage.setItem("petezah-history", JSON.stringify([newEntry, ...filtered].slice(0, 500)));
+        window.dispatchEvent(new CustomEvent('petezah-sync-request'));
       } catch {}
     };
     window.addEventListener("petezah-url-change", handler);

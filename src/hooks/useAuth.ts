@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { reconcileSettings } from "@/lib/settingsSync";
 
 export interface AuthUser {
   id: string;
@@ -19,6 +20,7 @@ export function useAuth() {
       const r = await fetch("/api/me");
       const data = await r.json();
       setUser(data.user || null);
+      if (data.user) await reconcileSettings();
     } catch {
       setUser(null);
     } finally {
