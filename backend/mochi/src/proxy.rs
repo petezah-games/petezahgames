@@ -54,22 +54,6 @@ fn build_safe_response_headers(res_headers_ref: &HeaderMap, is_likely_asset: boo
     safe_headers
 }
 
-fn sanitize_decoded_url(url: String) -> String {
-    if url.starts_with("http://") || url.starts_with("https://") {
-        return url;
-    }
-    if let Some(pos) = url.find("//") {
-        let before = &url[..pos];
-        if !before.ends_with(':') {
-            return format!("https://{}", &url[pos + 2..]);
-        }
-        if before != "http:" && before != "https:" && before != "ws:" && before != "wss:" {
-            return format!("https://{}", &url[pos + 2..]);
-        }
-    }
-    url
-}
-
 fn apply_common_request_headers(
     mut req_builder: reqwest::RequestBuilder,
     headers: &HeaderMap,
@@ -133,8 +117,7 @@ pub async fn proxy_handler(
         constants::MOCHI_PREFIX
     };
     let prefix_pos = path_and_query.find(prefix).unwrap_or(0);
-    let slice_start = (prefix_pos + prefix.len()).min(path_and_query.len());
-    let raw_target = &path_and_query[slice_start..];
+    let raw_target = &path_and_query[prefix_pos + prefix.len()..];
     let decoded_target_owned = if !raw_target.starts_with("http")
         && !raw_target.starts_with("ws")
         && !raw_target.is_empty()
@@ -181,16 +164,7 @@ pub async fn proxy_handler(
                         referer_clean.split_once('/').unwrap_or((referer_clean, ""));
                     if let Some(ref_decoded_base) = decode_mochi_url(ref_token) {
                         if let Ok(ref_url) = url::Url::parse(&ref_decoded_base) {
-                            let join_target = if let Some(stripped) = original_uri
-                                .split(prefix)
-                                .nth(1)
-                                .and_then(|s| s.split_once('/').map(|x| x.1))
-                            {
-                                stripped
-                            } else {
-                                original_uri
-                            };
-                            if let Ok(resolved) = ref_url.join(join_target) {
+                            if let Ok(resolved) = ref_url.join(original_uri) {
                                 fallback_target = resolved.to_string();
                             }
                         }
@@ -219,11 +193,6 @@ pub async fn proxy_handler(
         }
     } else {
         raw_target.to_string()
-    };
-    let decoded_target_owned = if decoded_target_owned.starts_with("http") {
-        sanitize_decoded_url(decoded_target_owned)
-    } else {
-        decoded_target_owned
     };
     let target_url_str: &str = &decoded_target_owned;
     debug!("proxying request to: {}", target_url_str);
