@@ -30,6 +30,7 @@ pub fn rewrite_html(body: &[u8], target_url: &Url, base_url_str: &str) -> Vec<u8
             }
             if url.starts_with("//") {
                 let scheme = current_base.borrow().scheme().to_string();
+                let scheme = if scheme == "http" || scheme == "https" { scheme } else { "https".to_string() };
                 let full = format!("{}:{}", scheme, url);
                 return Some(format!("{}{}/", MOCHI_PREFIX, encode_mochi_url(&full)));
             }
@@ -135,8 +136,11 @@ setTimeout(function(){clearInterval(_iv);},15000);
                 }),
                 element!("base[href]", move |el| {
                     if let Some(href) = el.get_attribute("href") {
-                        if let Ok(parsed_base) = target_url_for_base.join(&href) {
-                            *base_for_href.borrow_mut() = parsed_base.clone();
+                        if let Ok(mut parsed_base) = target_url_for_base.join(&href) {
+                        if parsed_base.scheme() != "http" && parsed_base.scheme() != "https" {
+                            let _ = parsed_base.set_scheme("https");
+                        }
+                        *base_for_href.borrow_mut() = parsed_base.clone();
                             let escaped_target = parsed_base.as_str().replace('\'', "\\'");
                             let injection = format!("<script>window.__MOCHI_TARGET__ = '{}';</script>", escaped_target);
                             el.after(&injection, ContentType::Html);
