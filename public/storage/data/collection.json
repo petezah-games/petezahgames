@@ -133,20 +133,6 @@
       "categories": ["skill"]
     },
     {
-      "label": "Geometry Dash",
-      "imageUrl": "/!!/https://slnt.calculra.store/resources/semag/webdash/TemplateData/favicon.ico",
-      "url": "/iframe.html?url=/!!/https://slnt.calculra.store/resources/semag/webdash",
-      "categories": [
-        "top"
-      ]
-    },
-    {
-      "label": "Boil Noodles at Night",
-      "imageUrl": "/!!/https://slnt.calculra.store/resources/semag/boilnoodles/asdasd.png",
-      "url": "/iframe.html?url=/!!/https://slnt.calculra.store/resources/semag/boilnoodles",
-      "categories": []
-    },
-    {
       "label": "Brotato Paws and Claws: Abyssal Terrors",
       "imageUrl": "/!!/https://slnt.calculra.store/resources/semag/brotatodlc/index.apple-touch-icon.png",
       "url": "/iframe.html?url=/!!/https://slnt.calculra.store/resources/semag/brotatodlc",
@@ -169,14 +155,6 @@
       "imageUrl": "/!!/https://slnt.calculra.store/resources/semag/flip-coin/index.icon.png",
       "url": "/iframe.html?url=/!!/https://slnt.calculra.store/resources/semag/flip-coin",
       "categories": []
-    },
-    {
-      "label": "Helltaker",
-      "imageUrl": "/!!/https://slnt.calculra.store/resources/semag/helltaker/favicon.png",
-      "url": "/iframe.html?url=/!!/https://slnt.calculra.store/resources/semag/helltaker",
-      "categories": [
-        "13+"
-      ]
     },
     {
       "label": "LORED",
