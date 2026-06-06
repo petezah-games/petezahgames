@@ -211,6 +211,11 @@ pub async fn proxy_handler(
     } else {
         raw_target.to_string()
     };
+    let decoded_target_owned = if decoded_target_owned.starts_with("http") {
+        sanitize_decoded_url(decoded_target_owned)
+    } else {
+        decoded_target_owned
+    };
     let target_url_str: &str = &decoded_target_owned;
     debug!("proxying request to: {}", target_url_str);
 
@@ -282,7 +287,7 @@ pub async fn proxy_handler(
     let target_url_string = if !target_url_str.starts_with("http") {
         format!("https://{}", target_url_str)
     } else {
-        sanitize_decoded_url(target_url_str.to_string())
+        target_url_str.to_string()
     };
 
     let _is_blocked_asset = target_url_string.contains(".part")
