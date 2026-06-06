@@ -54,6 +54,22 @@ fn build_safe_response_headers(res_headers_ref: &HeaderMap, is_likely_asset: boo
     safe_headers
 }
 
+fn sanitize_decoded_url(url: String) -> String {
+    if url.starts_with("http://") || url.starts_with("https://") {
+        return url;
+    }
+    if let Some(pos) = url.find("//") {
+        let before = &url[..pos];
+        if !before.ends_with(':') {
+            return format!("https://{}", &url[pos + 2..]);
+        }
+        if before != "http:" && before != "https:" && before != "ws:" && before != "wss:" {
+            return format!("https://{}", &url[pos + 2..]);
+        }
+    }
+    url
+}
+
 fn apply_common_request_headers(
     mut req_builder: reqwest::RequestBuilder,
     headers: &HeaderMap,
@@ -117,7 +133,8 @@ pub async fn proxy_handler(
         constants::MOCHI_PREFIX
     };
     let prefix_pos = path_and_query.find(prefix).unwrap_or(0);
-    let raw_target = &path_and_query[prefix_pos + prefix.len()..];
+    let slice_start = (prefix_pos + prefix.len()).min(path_and_query.len());
+    let raw_target = &path_and_query[slice_start..];
     let decoded_target_owned = if !raw_target.starts_with("http")
         && !raw_target.starts_with("ws")
         && !raw_target.is_empty()
@@ -265,7 +282,7 @@ pub async fn proxy_handler(
     let target_url_string = if !target_url_str.starts_with("http") {
         format!("https://{}", target_url_str)
     } else {
-        target_url_str.to_string()
+        sanitize_decoded_url(target_url_str.to_string())
     };
 
     let _is_blocked_asset = target_url_string.contains(".part")
